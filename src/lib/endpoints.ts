@@ -1,0 +1,86 @@
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1'
+
+export const ENDPOINTS = {
+  auth: {
+    health: '/auth/health',
+    profile: '/auth/profile',
+    refresh: '/auth/refresh',
+  },
+  deals: {
+    list: '/deals',
+    byId: (id: string) => `/deals/${id}`,
+    byMerchant: (merchantId: string) => `/deals/merchant/${merchantId}`,
+    status: (status: string) => `/deals/status/${status}`,
+    active: '/deals/active',
+  },
+  merchants: {
+    list: '/merchants',
+    search: '/merchants/search',
+    byId: (id: string) => `/merchants/${id}`,
+    byEmail: (email: string) => `/merchants/email/${encodeURIComponent(email)}`,
+    stats: (id: string) => `/merchants/${id}/stats`,
+  },
+  categories: {
+    list: '/categories',
+    tree: '/categories/tree',
+    root: '/categories/root',
+    level: (level: number) => `/categories/level/${level}`,
+    all: '/categories/all',
+    analytics: '/categories/analytics',
+    byId: (id: string) => `/categories/${id}`,
+    children: (id: string) => `/categories/${id}/children`,
+    byName: (name: string) => `/categories/name/${encodeURIComponent(name)}`,
+  },
+  customers: {
+    list: '/customers',
+    search: '/customers/search',
+    top: '/customers/top',
+    byId: (id: string) => `/customers/${id}`,
+    byEmail: (email: string) => `/customers/email/${encodeURIComponent(email)}`,
+    stats: (id: string) => `/customers/${id}/stats`,
+    insights: (id: string) => `/customers/${id}/insights`,
+    preferences: (id: string) => `/customers/${id}/preferences`,
+    create: '/customers',
+    createFromSupabase: '/customers/create-from-supabase',
+    deactivate: (id: string) => `/customers/${id}/deactivate`,
+    reactivate: (id: string) => `/customers/${id}/reactivate`,
+  },
+  orders: {
+    list: '/orders',
+    create: '/orders',
+    stats: '/orders/stats',
+    analytics: '/orders/analytics',
+    me: '/orders/me',
+    byCustomer: (customerId: string) => `/orders/customer/${customerId}`,
+    byMerchant: (merchantId: string) => `/orders/merchant/${merchantId}`,
+    byNumber: (orderNumber: string) => `/orders/number/${orderNumber}`,
+    byId: (id: string) => `/orders/${id}`,
+    update: (id: string) => `/orders/${id}`,
+    updateStatus: (id: string) => `/orders/${id}/status`,
+    cancel: (id: string) => `/orders/${id}/cancel`,
+    refund: (id: string) => `/orders/${id}/refund`,
+  },
+  coupons: {
+    list: '/coupons',
+    me: '/coupons/me',
+    stats: '/coupons/stats',
+    byOrder: (orderId: string) => `/coupons/order/${orderId}`,
+    byQRCode: (qr: string) => `/coupons/qr/${encodeURIComponent(qr)}`,
+    byId: (id: string) => `/coupons/${id}`,
+    validate: '/coupons/validate',
+    redeem: '/coupons/redeem',
+    expire: '/coupons/expire',
+    generateQR: '/coupons/qr-code',
+    cancel: (id: string) => `/coupons/${id}/cancel`,
+  },
+  payments: {
+    create: '/payments',
+    statusByOrder: (orderId: string) => `/payments/${orderId}/status`,
+    cancel: (orderId: string) => `/payments/${orderId}/cancel`,
+    webhookMidtrans: '/payments/webhook/midtrans',
+  },
+}
+
+export type EndpointKey = keyof typeof ENDPOINTS
+
+

@@ -1,26 +1,163 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Brand Colors - Improved palette */
+  --primary: 225 100% 50%; /* Rose-600 - More vibrant and modern */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 199 89% 48%; /* Sky-500 - Better contrast */
+  --secondary-foreground: 0 0% 100%;
+  --accent: 258 90% 66%; /* Violet-500 - More sophisticated */
+  --accent-foreground: 0 0% 100%;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Status Colors - More accessible */
+  --success: 158 64% 52%; /* Emerald-500 */
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%; /* Amber-500 */
+  --warning-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%; /* Red-500 */
+  --destructive-foreground: 0 0% 100%;
+  --info: 213 94% 68%; /* Blue-500 */
+  --info-foreground: 0 0% 100%;
+
+  /* Neutral Palette - Better contrast */
+  --background: 0 0% 100%;
+  --foreground: 222 84% 5%; /* Slate-900 - Better readability */
+  --card: 0 0% 100%;
+  --card-foreground: 222 84% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 84% 5%;
+  --muted: 210 40% 96%; /* Slate-100 - Softer background */
+  --muted-foreground: 215 16% 47%; /* Slate-500 - Better contrast */
+  --border: 214 32% 91%; /* Slate-200 - Softer borders */
+  --input: 214 32% 91%;
+  --ring: 225 100% 50%;
+
+  /* Radius */
+  --radius: 0.75rem; /* Slightly more rounded */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 222 84% 5%; /* Slate-900 - Better dark background */
+    --foreground: 210 40% 98%; /* Slate-50 - Better contrast */
+    --card: 222 84% 5%; /* Slate-800 - Better card contrast */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    --muted: 217 33% 17%; /* Slate-700 - Better muted background */
+    --muted-foreground: 215 20% 65%; /* Slate-400 - Better muted text */
+    --border: 215 28% 17%; /* Slate-600 - Better border visibility */
+    --input: 215 28% 17%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  *:focus-visible {
+    @apply outline-2 outline-ring outline-offset-2;
+  }
+}
+
+/* Enhanced animations and transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Utility classes for animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Enhanced shadows */
+.shadow-elegant {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-elegant-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-elegant-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+@layer utilities {
+  /* Gradient backgrounds */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+  }
+
+  .bg-gradient-secondary {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--accent)) 100%);
+  }
+
+  .bg-gradient-muted {
+    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%);
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-secondary {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--accent)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
