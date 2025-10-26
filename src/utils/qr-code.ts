@@ -27,13 +27,13 @@ export async function signQRCodeJWT(payload: Omit<QRCodePayload, 'iat' | 'exp'>)
   // Convert secret string to Uint8Array for jose
   const secretKey = new TextEncoder().encode(secret)
 
-  // Sign the JWT with a 24-hour expiration
+  // Sign the JWT with a 90-second expiration (30s buffer after 60s regeneration)
   const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setIssuer('lejel-deals-customer')
     .setAudience('coupon-redemption')
-    .setExpirationTime('24h')
+    .setExpirationTime('90s')
     .sign(secretKey)
 
   return token
