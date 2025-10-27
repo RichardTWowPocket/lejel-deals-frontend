@@ -8,45 +8,73 @@ import { useAuth } from '@/hooks/use-auth'
 import { 
   LayoutDashboard, 
   Tag, 
-  ShoppingBag, 
+  QrCode,
+  Receipt,
+  DollarSign,
+  Users,
+  Settings,
+  Image,
   LogOut,
   User,
   ChevronLeft,
   ChevronRight,
-  Menu,
-  Settings
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface SidebarProps {
+interface MerchantSidebarProps {
   className?: string
 }
 
-export function Sidebar({ className }: SidebarProps) {
+export function MerchantSidebar({ className }: MerchantSidebarProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const navigationItems = [
     {
-      name: 'Dashboard',
-      href: '/customer',
+      name: 'Overview',
+      href: '/merchant',
       icon: LayoutDashboard,
     },
     {
       name: 'Deals',
-      href: '/customer/deals',
+      href: '/merchant/deals',
       icon: Tag,
     },
     {
-      name: 'My Coupons',
-      href: '/customer/coupons',
-      icon: ShoppingBag,
+      name: 'QR Scanner',
+      href: '/merchant/verify',
+      icon: QrCode,
     },
     {
-      name: 'My Orders',
-      href: '/customer/orders',
-      icon: ShoppingBag,
+      name: 'Redemptions',
+      href: '/merchant/redemptions',
+      icon: Receipt,
+    },
+    {
+      name: 'Orders',
+      href: '/merchant/orders',
+      icon: Receipt,
+    },
+    {
+      name: 'Payouts',
+      href: '/merchant/payouts',
+      icon: DollarSign,
+    },
+    {
+      name: 'Staff',
+      href: '/merchant/staff',
+      icon: Users,
+    },
+    {
+      name: 'Media',
+      href: '/merchant/media',
+      icon: Image,
+    },
+    {
+      name: 'Settings',
+      href: '/merchant/settings',
+      icon: Settings,
     },
   ]
 
@@ -67,7 +95,7 @@ export function Sidebar({ className }: SidebarProps) {
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-elegant-lg flex-shrink-0'>
                 <span className='text-xl font-bold text-white'>L</span>
               </div>
-              <span className='text-xl font-bold text-gradient-primary truncate'>Lejel Deals</span>
+              <span className='text-xl font-bold text-gradient-primary truncate'>Merchant</span>
             </div>
             <Button
               variant='ghost'
@@ -75,7 +103,6 @@ export function Sidebar({ className }: SidebarProps) {
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                console.log('Toggle button clicked!', isCollapsed)
                 setIsCollapsed(!isCollapsed)
               }}
               className='h-10 w-10 p-0 hover:bg-muted/50 rounded-lg transition-all duration-200 hover:scale-105'
@@ -95,7 +122,6 @@ export function Sidebar({ className }: SidebarProps) {
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                console.log('Toggle button clicked!', isCollapsed)
                 setIsCollapsed(!isCollapsed)
               }}
               className='h-8 w-8 p-0 hover:bg-muted/50 rounded-lg transition-all duration-200 hover:scale-105'
@@ -108,9 +134,9 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className='flex-1 p-4 space-y-2'>
+      <nav className='flex-1 p-4 space-y-2 overflow-y-auto'>
         {navigationItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <Link key={item.name} href={item.href} title={isCollapsed ? item.name : undefined}>
               <Button
@@ -138,7 +164,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* User Profile Section */}
       <div className='p-4 border-t border-border/50'>
-        <Link href='/customer/profile'>
+        <Link href='/merchant/settings'>
           <div className={cn(
             'flex items-center rounded-xl bg-muted/30 transition-all duration-300 cursor-pointer hover:bg-muted/50 hover:shadow-sm',
             isCollapsed ? 'justify-center p-2' : 'gap-3 p-3'
@@ -158,10 +184,10 @@ export function Sidebar({ className }: SidebarProps) {
             {!isCollapsed && (
               <div className='flex-1 min-w-0'>
                 <p className='text-sm font-semibold text-foreground truncate'>
-                  {user?.name || 'User'}
+                  {user?.name || 'Merchant'}
                 </p>
                 <p className='text-xs text-muted-foreground truncate'>
-                  {user?.email || 'user@example.com'}
+                  {user?.email || 'merchant@example.com'}
                 </p>
               </div>
             )}
@@ -195,3 +221,4 @@ export function Sidebar({ className }: SidebarProps) {
     </div>
   )
 }
+
