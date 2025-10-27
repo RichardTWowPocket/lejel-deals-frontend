@@ -34,7 +34,7 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       name: 'Deals',
-      href: '/deals',
+      href: '/customer/deals',
       icon: Tag,
     },
     {

@@ -34,9 +34,13 @@ api.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      if (typeof window !== 'undefined') {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      // A 401 from the backend means authentication has failed - sign out the user
+      try {
+        const { signOut } = await import('next-auth/react');
+        await signOut({ redirect: true, callbackUrl: '/login' });
+      } catch {
+        // Fallback if signOut fails
         localStorage.removeItem('access_token');
         window.location.href = '/login';
       }

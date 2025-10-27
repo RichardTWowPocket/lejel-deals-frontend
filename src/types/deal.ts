@@ -26,6 +26,8 @@ export interface Deal {
     id: string
     name: string
     slug: string
+    icon?: string
+    color?: string
   }
   merchantId: string
   merchant: {
@@ -34,6 +36,9 @@ export interface Deal {
     slug: string
     logoUrl?: string
     address?: string
+    city?: string
+    province?: string
+    phone?: string
   }
   type: DealType
   dealPrice: number // Price customer pays
@@ -66,7 +71,7 @@ export interface DealFilters {
   status?: DealStatus
   search?: string
   featured?: boolean
-  sortBy?: 'createdAt' | 'discountedPrice' | 'discountPercentage' | 'popularity'
+  sortBy?: 'createdAt' | 'discountedPrice' | 'discountPercentage' | 'popularity' | 'validUntil'
   sortOrder?: 'asc' | 'desc'
   page?: number
   limit?: number

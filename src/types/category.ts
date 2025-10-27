@@ -4,6 +4,7 @@ export interface Category {
   name: string
   description?: string
   icon?: string
+  color?: string
   imageUrl?: string
   parentId?: string
   featured: boolean
