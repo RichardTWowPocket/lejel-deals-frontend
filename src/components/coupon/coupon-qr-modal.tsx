@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,11 +13,6 @@ import {
   Check,
   Eye,
   EyeOff,
-  MapPin,
-  Phone,
-  Clock,
-  AlertCircle,
-  ExternalLink,
   RefreshCw
 } from 'lucide-react'
 
@@ -56,6 +51,7 @@ export function CouponQRModal({ coupon, isOpen, onClose }: CouponQRModalProps) {
   const [qrToken, setQrToken] = useState('')
   const [qrCodeImage, setQrCodeImage] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [countdown, setCountdown] = useState(60)
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -89,7 +85,7 @@ export function CouponQRModal({ coupon, isOpen, onClose }: CouponQRModalProps) {
     }
   }
 
-  const generateQRToken = async () => {
+  const generateQRToken = useCallback(async () => {
     setIsGenerating(true)
     try {
       // Generate QR code JWT token using the existing QR code utility
@@ -134,13 +130,36 @@ export function CouponQRModal({ coupon, isOpen, onClose }: CouponQRModalProps) {
     } finally {
       setIsGenerating(false)
     }
-  }
+  }, [coupon.id, coupon.qrCode, coupon.order.orderNumber])
 
   useEffect(() => {
     if (isOpen && coupon.status === 'ACTIVE') {
       generateQRToken()
+      setCountdown(60) // Reset countdown to 60 seconds
+      
+      // Countdown timer
+      const countdownInterval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            return 60 // Reset to 60 when it reaches 0
+          }
+          return prev - 1
+        })
+      }, 1000) // Update every 1 second
+
+      // Auto-refresh QR code every 60 seconds
+      const refreshInterval = setInterval(() => {
+        generateQRToken()
+        setCountdown(60) // Reset countdown after refresh
+      }, 60000) // 60 seconds
+
+      // Cleanup intervals on close or unmount
+      return () => {
+        clearInterval(refreshInterval)
+        clearInterval(countdownInterval)
+      }
     }
-  }, [isOpen, coupon.status])
+  }, [isOpen, coupon.status, generateQRToken])
 
   const getStatusInfo = () => {
     switch (coupon.status) {
@@ -198,26 +217,22 @@ export function CouponQRModal({ coupon, isOpen, onClose }: CouponQRModalProps) {
           </div>
 
           {/* QR Code Display */}
-          <div className='text-center'>
+          <div className='flex justify-center'>
             {coupon.status === 'ACTIVE' ? (
               <div className='space-y-4'>
-                <div className='bg-white p-6 rounded-lg border-2 border-dashed border-gray-300'>
-                  {qrCodeImage ? (
-                    <div className='flex flex-col items-center gap-2'>
-                      <img 
-                        src={qrCodeImage} 
-                        alt="QR Code" 
-                        className='h-32 w-32'
-                      />
-                      <p className='text-xs text-muted-foreground'>QR Code Generated</p>
-                    </div>
-                  ) : (
-                    <div className='flex flex-col items-center gap-2'>
-                      <QrCode className='h-32 w-32 mx-auto text-gray-400' />
-                      <p className='text-sm text-muted-foreground'>Generating QR Code...</p>
-                    </div>
-                  )}
-                </div>
+                {qrCodeImage ? (
+                  <div className='inline-block bg-white p-3 rounded-lg'>
+                    <img 
+                      src={qrCodeImage} 
+                      alt="QR Code" 
+                      className='h-64 w-64'
+                    />
+                  </div>
+                ) : (
+                  <div className='flex items-center justify-center'>
+                    <RefreshCw className='h-8 w-8 animate-spin text-muted-foreground' />
+                  </div>
+                )}
                 
                 <div className='flex items-center justify-center gap-2'>
                   <span className='text-sm font-mono'>
@@ -242,18 +257,12 @@ export function CouponQRModal({ coupon, isOpen, onClose }: CouponQRModalProps) {
                   </Button>
                 </div>
 
-                {isGenerating && (
-                  <div className='flex items-center justify-center gap-2 text-sm text-muted-foreground'>
-                    <RefreshCw className='h-4 w-4 animate-spin' />
-                    Generating QR token...
-                  </div>
-                )}
               </div>
             ) : (
-              <div className='bg-gray-100 dark:bg-gray-800 p-6 rounded-lg'>
+              <div className='inline-block bg-gray-100 dark:bg-gray-800 p-6 rounded-lg'>
                 <div className='text-center text-muted-foreground'>
-                  <QrCode className='h-16 w-16 mx-auto mb-2 opacity-50' />
-                  <p className='text-sm'>{statusInfo.message}</p>
+                  <QrCode className='h-64 w-64 mx-auto opacity-50' />
+                  <p className='text-sm mt-2'>{statusInfo.message}</p>
                 </div>
               </div>
             )}
@@ -281,65 +290,15 @@ export function CouponQRModal({ coupon, isOpen, onClose }: CouponQRModalProps) {
             )}
           </div>
 
-          {/* How to Redeem */}
-          {coupon.status === 'ACTIVE' && (
-            <div className='bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg'>
-              <h4 className='font-medium text-sm mb-2'>How to redeem:</h4>
-              <ol className='text-sm text-muted-foreground space-y-1'>
-                <li>1. Show this QR code to the cashier</li>
-                <li>2. Cashier may ask for the last 4 digits of your phone</li>
-                <li>3. After successful redemption, status will change to "Used"</li>
-              </ol>
+
+          {/* Countdown timer */}
+          {coupon.status === 'ACTIVE' && countdown > 0 && (
+            <div className='text-center'>
+              <p className='text-xs text-muted-foreground'>
+                Refreshing in <span className='font-mono font-semibold text-primary'>{countdown}s</span>
+              </p>
             </div>
           )}
-
-          {/* Merchant Info */}
-          <div className='space-y-3'>
-            <h4 className='font-medium text-sm'>Merchant Information</h4>
-            <div className='space-y-2 text-sm'>
-              {coupon.deal.merchant.address && (
-                <div className='flex items-center gap-2'>
-                  <MapPin className='h-4 w-4 text-muted-foreground' />
-                  <span>{coupon.deal.merchant.address}</span>
-                </div>
-              )}
-              {coupon.deal.merchant.phone && (
-                <div className='flex items-center gap-2'>
-                  <Phone className='h-4 w-4 text-muted-foreground' />
-                  <a 
-                    href={`tel:${coupon.deal.merchant.phone}`}
-                    className='text-blue-600 hover:underline'
-                  >
-                    {coupon.deal.merchant.phone}
-                  </a>
-                </div>
-              )}
-            </div>
-            
-            {coupon.deal.merchant.address && (
-              <Button variant='outline' size='sm' className='w-full'>
-                <ExternalLink className='h-4 w-4 mr-2' />
-                Get Directions
-              </Button>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className='flex gap-3'>
-            <Button variant='outline' onClick={onClose} className='flex-1'>
-              Close
-            </Button>
-            {coupon.status === 'ACTIVE' && (
-              <Button onClick={generateQRToken} disabled={isGenerating} className='flex-1'>
-                {isGenerating ? (
-                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
-                ) : (
-                  <RefreshCw className='h-4 w-4 mr-2' />
-                )}
-                Refresh QR
-              </Button>
-            )}
-          </div>
         </div>
       </DialogContent>
     </Dialog>

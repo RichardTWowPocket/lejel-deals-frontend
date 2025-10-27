@@ -8,6 +8,7 @@ export interface QRCodePayload {
   couponId: string
   orderId: string
   qrCode: string
+  timestamp?: number
   iat?: number
   exp?: number
 }
@@ -27,13 +28,16 @@ export async function signQRCodeJWT(payload: Omit<QRCodePayload, 'iat' | 'exp'>)
   // Convert secret string to Uint8Array for jose
   const secretKey = new TextEncoder().encode(secret)
 
-  // Sign the JWT with a 90-second expiration (30s buffer after 60s regeneration)
-  const token = await new SignJWT(payload)
+  // Sign the JWT with a 70-second expiration (10s buffer after 60s refresh)
+  const token = await new SignJWT({
+    ...payload,
+    timestamp: Date.now(), // Add timestamp to make each token unique
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setIssuer('lejel-deals-customer')
     .setAudience('coupon-redemption')
-    .setExpirationTime('90s')
+    .setExpirationTime('70s') // Token expires in 70 seconds
     .sign(secretKey)
 
   return token
