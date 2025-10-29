@@ -23,7 +23,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>
+      <SessionProvider
+        refetchInterval={10 * 60} // Refetch session every 10 minutes (600 seconds) for better caching
+        refetchOnWindowFocus={false} // Don't refetch when window regains focus
+        refetchWhenOffline={false} // Don't refetch when offline
+      >
         <SessionTokenSync />
         {children}
       </SessionProvider>

@@ -52,7 +52,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <div className={cn(
-      'flex h-screen flex-col bg-background border-r border-border/50 transition-all duration-300',
+      'hidden md:flex h-screen flex-col bg-background border-r border-border/50 transition-all duration-300',
       isCollapsed ? 'w-20' : 'w-64',
       className
     )}>

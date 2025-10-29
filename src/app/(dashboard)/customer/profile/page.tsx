@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { UserRole } from '@/lib/constants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -31,14 +32,14 @@ import {
 import { toast } from 'react-hot-toast'
 
 export default function ProfilePage() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState('personal')
   const [isSaving, setIsSaving] = useState(false)
   
-  // Form states
+  // Form states - initialize without blocking on user
   const [personalInfo, setPersonalInfo] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
+    name: '',
+    email: '',
     phone: '',
     dateOfBirth: '',
     gender: '',
@@ -46,6 +47,17 @@ export default function ProfilePage() {
     city: '',
     postalCode: ''
   })
+
+  // Update form state when user loads (non-blocking)
+  useEffect(() => {
+    if (user && !isLoading) {
+      setPersonalInfo(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email
+      }))
+    }
+  }, [user, isLoading])
 
   const [preferences, setPreferences] = useState({
     language: 'id',
@@ -125,64 +137,164 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
       <div className='space-y-6'>
-        {/* Header */}
-        <div className='space-y-2'>
+        {/* Header - Hidden on mobile for Jenny Wilson style */}
+        <div className='hidden md:block space-y-2'>
           <h1 className='text-3xl font-bold'>Profil</h1>
           <p className='text-muted-foreground'>Kelola informasi akun dan preferensi Anda</p>
         </div>
 
-        {/* Profile Header Card */}
-        <Card className='border-primary/20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5'>
-          <CardContent className='p-6'>
-            <div className='flex items-center gap-6'>
-              {/* Avatar */}
-              <div className='relative'>
-                <div className='h-24 w-24 rounded-full border-4 border-background shadow-lg bg-gradient-primary flex items-center justify-center'>
-                  <span className='text-2xl font-bold text-white'>
-                    {getUserInitials()}
-                  </span>
+        {/* Profile Header Card - Jenny Wilson Style on Mobile */}
+        <Card className='relative overflow-hidden border-0 bg-gradient-to-b from-card via-card/95 to-card shadow-elegant-xl md:border-primary/20 md:bg-gradient-to-br md:from-primary/5 md:via-secondary/5 md:to-accent/5'>
+          {/* Background gradient overlay for mobile */}
+          <div className='hidden md:block absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5' />
+          
+          <CardContent className='relative p-6 md:p-6'>
+            {isLoading && !user ? (
+              <>
+                {/* Mobile Skeleton (< md) - Jenny Wilson Style */}
+                <div className='flex flex-col items-center space-y-6 md:hidden'>
+                  <div className='relative'>
+                    <Skeleton className='h-32 w-32 rounded-full' />
+                    <Skeleton className='absolute top-0 right-0 h-8 w-8 rounded-full border-4 border-card' />
+                  </div>
+                  <Skeleton className='h-8 w-48' />
+                  <div className='flex gap-3'>
+                    <Skeleton className='h-6 w-32' />
+                    <Skeleton className='h-6 w-40' />
+                  </div>
+                  <Skeleton className='h-4 w-64' />
                 </div>
-                <Button
-                  size='sm'
-                  variant='secondary'
-                  className='absolute bottom-0 right-0 h-8 w-8 rounded-full p-0 shadow-md'
-                  onClick={() => toast('Fitur upload foto akan segera tersedia', { icon: '📷' })}
-                >
-                  <Camera className='h-4 w-4' />
-                </Button>
-              </div>
+                {/* Desktop Skeleton (>= md) - Horizontal Layout */}
+                <div className='hidden md:flex items-center gap-6'>
+                  <div className='relative flex-shrink-0'>
+                    <Skeleton className='h-24 w-24 rounded-full' />
+                    <Skeleton className='absolute bottom-0 right-0 h-8 w-8 rounded-full' />
+                  </div>
+                  <div className='flex-1 space-y-2'>
+                    <Skeleton className='h-7 w-48' />
+                    <Skeleton className='h-4 w-64' />
+                    <Skeleton className='h-4 w-56' />
+                  </div>
+                  <div className='flex gap-6 flex-shrink-0'>
+                    <div className='text-center space-y-1'>
+                      <Skeleton className='h-8 w-12' />
+                      <Skeleton className='h-4 w-20' />
+                    </div>
+                    <div className='text-center space-y-1'>
+                      <Skeleton className='h-8 w-12' />
+                      <Skeleton className='h-4 w-24' />
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Mobile Layout (< md) - Jenny Wilson Style */}
+                <div className='flex flex-col items-center space-y-4 md:hidden'>
+                  {/* Avatar with verification badge */}
+                  <div className='relative'>
+                    <div className='h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-background shadow-elegant-lg bg-gradient-primary flex items-center justify-center'>
+                      <span className='text-3xl sm:text-4xl font-bold text-white'>
+                        {getUserInitials()}
+                      </span>
+                    </div>
+                    {/* Verification Badge */}
+                    <div className='absolute top-0 right-0 h-8 w-8 rounded-full bg-green-500 border-4 border-card flex items-center justify-center shadow-md'>
+                      <CheckCircle className='h-4 w-4 text-white' />
+                    </div>
+                    {/* Camera Button */}
+                    <Button
+                      size='sm'
+                      variant='secondary'
+                      className='absolute bottom-0 right-0 h-8 w-8 rounded-full p-0 shadow-md'
+                      onClick={() => toast('Fitur upload foto akan segera tersedia', { icon: '📷' })}
+                    >
+                      <Camera className='h-4 w-4' />
+                    </Button>
+                  </div>
 
-              {/* User Info */}
-              <div className='flex-1'>
-                <div className='flex items-center gap-3 mb-2'>
-                  <h2 className='text-2xl font-bold'>{user?.name || 'User'}</h2>
-                  <Badge variant='default' className='bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'>
-                    <CheckCircle className='mr-1 h-3 w-3' />
-                    Verified
-                  </Badge>
-                </div>
-                <p className='text-muted-foreground flex items-center gap-2 mb-1'>
-                  <Mail className='h-4 w-4' />
-                  {user?.email}
-                </p>
-                <p className='text-muted-foreground flex items-center gap-2'>
-                  <CreditCard className='h-4 w-4' />
-                  Customer Account
-                </p>
-              </div>
+                  {/* Name */}
+                  <div className='text-center'>
+                    <h2 className='text-2xl sm:text-3xl font-bold mb-2'>{user?.name || 'User'}</h2>
+                  </div>
 
-              {/* Stats */}
-              <div className='flex gap-6'>
-                <div className='text-center'>
-                  <p className='text-2xl font-bold text-primary'>0</p>
-                  <p className='text-sm text-muted-foreground'>Total Orders</p>
+                  {/* Tags/Badges */}
+                  <div className='flex flex-wrap items-center justify-center gap-2'>
+                    <Badge variant='default' className='px-3 py-1 text-sm bg-yellow-500/20 text-yellow-200 border-yellow-500/30'>
+                      <Mail className='mr-1.5 h-3 w-3' />
+                      {user?.email || 'email@example.com'}
+                    </Badge>
+                    <Badge variant='outline' className='px-3 py-1 text-sm bg-card/50'>
+                      <CreditCard className='mr-1.5 h-3 w-3' />
+                      Customer Account
+                    </Badge>
+                  </div>
+
+                  {/* Stats - Mobile */}
+                  <div className='flex gap-8 pt-2'>
+                    <div className='text-center'>
+                      <p className='text-xl font-bold text-primary'>0</p>
+                      <p className='text-xs text-muted-foreground mt-1'>Orders</p>
+                    </div>
+                    <div className='text-center'>
+                      <p className='text-xl font-bold text-secondary'>0</p>
+                      <p className='text-xs text-muted-foreground mt-1'>Coupons</p>
+                    </div>
+                  </div>
                 </div>
-                <div className='text-center'>
-                  <p className='text-2xl font-bold text-secondary'>0</p>
-                  <p className='text-sm text-muted-foreground'>Active Coupons</p>
+
+                {/* Desktop Layout (>= md) - Horizontal */}
+                <div className='hidden md:flex items-center gap-6'>
+                  {/* Avatar */}
+                  <div className='relative'>
+                    <div className='h-24 w-24 rounded-full border-4 border-background shadow-lg bg-gradient-primary flex items-center justify-center'>
+                      <span className='text-2xl font-bold text-white'>
+                        {getUserInitials()}
+                      </span>
+                    </div>
+                    <Button
+                      size='sm'
+                      variant='secondary'
+                      className='absolute bottom-0 right-0 h-8 w-8 rounded-full p-0 shadow-md'
+                      onClick={() => toast('Fitur upload foto akan segera tersedia', { icon: '📷' })}
+                    >
+                      <Camera className='h-4 w-4' />
+                    </Button>
+                  </div>
+
+                  {/* User Info */}
+                  <div className='flex-1'>
+                    <div className='flex items-center gap-3 mb-2'>
+                      <h2 className='text-2xl font-bold'>{user?.name || 'User'}</h2>
+                      <Badge variant='default' className='bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'>
+                        <CheckCircle className='mr-1 h-3 w-3' />
+                        Verified
+                      </Badge>
+                    </div>
+                    <p className='text-muted-foreground flex items-center gap-2 mb-1'>
+                      <Mail className='h-4 w-4' />
+                      {user?.email || 'Loading...'}
+                    </p>
+                    <p className='text-muted-foreground flex items-center gap-2'>
+                      <CreditCard className='h-4 w-4' />
+                      Customer Account
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className='flex gap-6'>
+                    <div className='text-center'>
+                      <p className='text-2xl font-bold text-primary'>0</p>
+                      <p className='text-sm text-muted-foreground'>Total Orders</p>
+                    </div>
+                    <div className='text-center'>
+                      <p className='text-2xl font-bold text-secondary'>0</p>
+                      <p className='text-sm text-muted-foreground'>Active Coupons</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -223,12 +335,16 @@ export default function ProfilePage() {
                 <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <div className='space-y-2'>
                     <Label htmlFor='name'>Nama Lengkap *</Label>
-                    <Input
-                      id='name'
-                      value={personalInfo.name}
-                      onChange={(e) => setPersonalInfo({ ...personalInfo, name: e.target.value })}
-                      placeholder='Masukkan nama lengkap'
-                    />
+                    {isLoading && !user ? (
+                      <Skeleton className='h-10 w-full' />
+                    ) : (
+                      <Input
+                        id='name'
+                        value={personalInfo.name}
+                        onChange={(e) => setPersonalInfo({ ...personalInfo, name: e.target.value })}
+                        placeholder='Masukkan nama lengkap'
+                      />
+                    )}
                   </div>
                   <div className='space-y-2'>
                     <Label htmlFor='phone'>Nomor Telepon</Label>
@@ -244,13 +360,18 @@ export default function ProfilePage() {
 
                 <div className='space-y-2'>
                   <Label htmlFor='email'>Email</Label>
-                  <Input
-                    id='email'
-                    type='email'
-                    value={personalInfo.email}
-                    disabled
-                    className='bg-muted'
-                  />
+                  {isLoading && !user ? (
+                    <Skeleton className='h-10 w-full' />
+                  ) : (
+                    <Input
+                      id='email'
+                      type='email'
+                      value={personalInfo.email}
+                      disabled
+                      className='bg-muted'
+                      placeholder={isLoading ? 'Memuat...' : 'Email'}
+                    />
+                  )}
                   <p className='text-xs text-muted-foreground'>
                     Email tidak dapat diubah
                   </p>

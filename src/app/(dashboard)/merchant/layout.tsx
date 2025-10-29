@@ -1,4 +1,6 @@
 import { MerchantSidebar } from '@/components/layout/merchant-sidebar'
+import { BottomNav } from '@/components/layout/bottom-nav'
+import { DashboardNavbar } from '@/components/layout/dashboard-navbar'
 
 export default function MerchantLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -6,14 +8,24 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
       {/* Sidebar */}
       <MerchantSidebar />
       
-      {/* Main Content */}
-      <main className='flex-1 overflow-y-auto'>
-        <div className='p-6'>
-          {children}
-        </div>
-      </main>
+      {/* Main Content Area */}
+      <div className='flex-1 flex flex-col overflow-hidden'>
+        {/* Top Navbar */}
+        <DashboardNavbar />
+        
+        {/* Main Content */}
+        <main className='flex-1 overflow-y-auto pb-16 md:pb-0'>
+          <div className='p-4 md:p-6'>
+            {children}
+          </div>
+        </main>
+      </div>
+
+      {/* Bottom Navigation (Mobile Only) */}
+      <BottomNav />
     </div>
   )
 }
+
 
 
