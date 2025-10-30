@@ -12,21 +12,16 @@ import { CouponHeroStrip } from '@/components/coupon/coupon-hero-strip'
 import { ActiveCouponsCarousel } from '@/components/coupon/active-coupons-carousel'
 import { EmptyCouponsState } from '@/components/customer/empty-coupons-state'
 import { NotificationsPreview } from '@/components/customer/notifications-preview'
-import { DealCard } from '@/components/deal/deal-card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
 import { OrderStatusBadge } from '@/components/ui/order-status-badge'
 import { 
   Sparkles, 
   ShoppingBag, 
   Ticket, 
-  QrCode, 
   ArrowRight, 
   TrendingUp, 
   Clock, 
   CheckCircle,
-  Eye,
-  Calendar,
   Plus
 } from 'lucide-react'
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { UserRole } from '@/lib/constants'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -18,15 +18,11 @@ import {
   SortAsc,
   SortDesc,
   QrCode,
-  Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
-  MapPin,
-  Calendar,
   Plus,
-  Eye,
-  EyeOff
+  Link,
 } from 'lucide-react'
 
 type CouponStatus = 'ALL' | 'ACTIVE' | 'USED' | 'EXPIRED'
@@ -198,10 +194,10 @@ export default function CouponsPage() {
               </p>
             </div>
             <Button asChild className='bg-gradient-primary hover:bg-gradient-primary/90'>
-              <a href='/deals'>
+              <Link href='/deals'>
                 <Plus className='mr-2 h-4 w-4' />
                 Browse Deals
-              </a>
+              </Link>
             </Button>
           </div>
         </header>
@@ -344,7 +340,7 @@ export default function CouponsPage() {
                 }
               </p>
               <Button asChild>
-                <a href='/deals'>Lihat Promo Hari Ini</a>
+                <Link href='/deals'>Lihat Promo Hari Ini</Link>
               </Button>
             </CardContent>
           </Card>
@@ -432,9 +428,9 @@ export default function CouponsPage() {
                                   {statusInfo.action}
                                 </>
                               ) : (
-                                <a href={`/customer/coupons/${coupon.id}`}>
+                                <Link href={`/customer/coupons/${coupon.id}`}>
                                   {statusInfo.action}
-                                </a>
+                                </Link>
                               )}
                             </Button>
                           </div>

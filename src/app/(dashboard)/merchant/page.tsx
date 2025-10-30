@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { 
@@ -33,11 +33,22 @@ interface MerchantOverview {
     redemptions: number
     revenue: number
     voucherValueRedeemed: number
-    ordersDetails: any[]
-    redemptionsDetails: any[]
+    ordersDetails: Array<{
+      id: string
+      orderNumber: string
+      totalAmount: number | string
+      customer?: { firstName?: string; lastName?: string }
+    }>
+    redemptionsDetails: Array<{
+      id: string
+      coupon: {
+        deal: { title: string }
+        order: { orderNumber: string }
+      }
+    }>
   }
   activeDeals: number
-  activeDealsList: any[]
+  activeDealsList: Array<{ id: string; title: string }>
   lowInventoryDeals: Array<{
     id: string
     title: string
@@ -84,7 +95,7 @@ function formatTimeRemaining(expiresAt: string): string {
 }
 
 export default function MerchantOverviewPage() {
-  const [merchantId, setMerchantId] = useState<string>('demo-merchant-1') // TODO: Get from auth
+  const [merchantId] = useState<string>('demo-merchant-1') // TODO: Get from auth
 
   const { data, isLoading, error } = useQuery<MerchantOverview>({
     queryKey: ['merchantOverview', merchantId],
@@ -395,6 +406,7 @@ export default function MerchantOverviewPage() {
     </div>
   )
 }
+
 
 
 

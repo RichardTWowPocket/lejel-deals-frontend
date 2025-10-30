@@ -68,7 +68,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ slug: str
       <div className='flex min-h-screen items-center justify-center'>
         <Card className='p-8 text-center'>
           <h2 className='mb-2 text-2xl font-bold'>Deal not found</h2>
-          <p className='mb-4 text-muted-foreground'>The deal you're looking for doesn't exist</p>
+          <p className='mb-4 text-muted-foreground'>The deal you&apos;re looking for doesn&apos;t exist</p>
           <Button asChild>
             <Link href='/deals'>Browse All Deals</Link>
           </Button>

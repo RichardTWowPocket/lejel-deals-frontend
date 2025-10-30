@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { usePayment } from '@/hooks/use-payment'
@@ -17,12 +16,10 @@ import { ActivityTimeline } from '@/components/order/activity-timeline'
 import { UserRole } from '@/lib/constants'
 import { 
   ArrowLeft,
-  Download,
   RefreshCw,
   MapPin,
   Phone,
   Clock,
-  Calendar,
   CreditCard,
   ShoppingBag,
   AlertCircle,
@@ -73,12 +70,10 @@ interface OrderDetail {
 export default function OrderDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
   const { formatCurrency, formatMethod } = usePayment()
   
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false)
   const [copied, setCopied] = useState(false)
 
   // Mock data - replace with actual API call
@@ -150,26 +145,6 @@ export default function OrderDetailPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
-  }
-
-  const formatRelativeDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (diffInDays === 0) return 'Hari ini'
-    if (diffInDays === 1) return 'Kemarin'
-    if (diffInDays < 7) return `${diffInDays} hari lalu`
-    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
-  }
-
-  const handleGenerateReceipt = async () => {
-    setIsGeneratingReceipt(true)
-    // TODO: Implement receipt generation
-    setTimeout(() => {
-      setIsGeneratingReceipt(false)
-      // Mock receipt generation
-    }, 2000)
   }
 
   const handleCopyOrderNumber = async () => {

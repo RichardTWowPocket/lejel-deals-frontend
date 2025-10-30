@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Search, Bell } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { UserRole } from '@/lib/constants'

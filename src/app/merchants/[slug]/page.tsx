@@ -1,7 +1,6 @@
 'use client'
 
 import { use } from 'react'
-import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, MapPin, Phone, Globe, Clock, Mail, CheckCircle2, Star } from 'lucide-react'

@@ -53,7 +53,7 @@ export default function CategoriesPage() {
             </div>
             <h3 className='mb-2 text-xl font-semibold'>Unable to Load Categories</h3>
             <p className='mb-6 text-muted-foreground'>
-              We're having trouble connecting to our servers. Please try again later.
+              We&apos;re having trouble connecting to our servers. Please try again later.
             </p>
             <div className='flex flex-col gap-2 sm:flex-row sm:justify-center'>
               <Button onClick={() => window.location.reload()} variant='default'>

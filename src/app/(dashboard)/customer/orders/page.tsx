@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ProtectedRoute } from '@/components/auth/protected-route'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -11,20 +11,13 @@ import { useAuth } from '@/hooks/use-auth'
 import { useCustomerOrders } from '@/hooks/use-orders'
 import { usePayment } from '@/hooks/use-payment'
 import { OrderStatusBadge } from '@/components/ui/order-status-badge'
-import { PaymentReference } from '@/components/ui/payment-reference'
 import { UserRole } from '@/lib/constants'
 import { 
   Search, 
-  Filter, 
   ShoppingBag, 
-  Calendar, 
-  MapPin, 
   ArrowRight,
   Plus,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle
+  Link,
 } from 'lucide-react'
 
 type OrderStatus = 'ALL' | 'PENDING' | 'PAID' | 'REFUNDED' | 'CANCELLED'
@@ -32,7 +25,7 @@ type OrderStatus = 'ALL' | 'PENDING' | 'PAID' | 'REFUNDED' | 'CANCELLED'
 export default function OrdersPage() {
   const { user } = useAuth()
   const { data, isLoading } = useCustomerOrders(user?.id || '')
-  const { formatCurrency, formatMethod } = usePayment()
+  const { formatCurrency } = usePayment()
   
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<OrderStatus>('ALL')
@@ -205,7 +198,7 @@ export default function OrdersPage() {
                 }
               </p>
               <Button asChild>
-                <a href='/deals'>Lihat Promo Hari Ini</a>
+                <Link href='/deals'>Lihat Promo Hari Ini</Link>
               </Button>
             </CardContent>
           </Card>
@@ -285,10 +278,10 @@ export default function OrdersPage() {
                               </Button>
                             )}
                             <Button asChild size='sm' variant='ghost'>
-                              <a href={`/customer/orders/${order.id}`}>
+                              <Link href={`/customer/orders/${order.id}`}>
                                 View Detail
                                 <ArrowRight className='ml-1 h-3 w-3' />
-                              </a>
+                              </Link>
                             </Button>
                           </div>
                         </div>

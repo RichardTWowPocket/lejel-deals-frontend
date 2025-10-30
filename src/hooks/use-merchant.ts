@@ -14,11 +14,22 @@ export interface MerchantOverview {
     redemptions: number
     revenue: number
     voucherValueRedeemed: number
-    ordersDetails: any[]
-    redemptionsDetails: any[]
+    ordersDetails: Array<{
+      id: string
+      orderNumber: string
+      totalAmount: number | string
+      customer?: { firstName?: string; lastName?: string }
+    }>
+    redemptionsDetails: Array<{
+      id: string
+      coupon: {
+        deal: { title: string }
+        order: { orderNumber: string }
+      }
+    }>
   }
   activeDeals: number
-  activeDealsList: any[]
+  activeDealsList: Array<{ id: string; title: string }>
   lowInventoryDeals: Array<{
     id: string
     title: string
@@ -83,6 +94,7 @@ export function useMerchantDeals(merchantId?: string, page: number = 1, limit: n
     enabled: !!merchantId,
   })
 }
+
 
 
 
