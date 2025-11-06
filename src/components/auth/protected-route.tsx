@@ -39,11 +39,12 @@ export function ProtectedRoute({
         // Redirect to appropriate dashboard based on role
         if (user.role === UserRole.MERCHANT) {
           router.push('/merchant')
-        } else if (user.role === UserRole.ADMIN) {
-          router.push('/admin')
-        } else if (user.role === UserRole.STAFF) {
-          router.push('/merchant/scanner')
+        } else if (user.role === UserRole.SUPER_ADMIN) {
+          // SUPER_ADMIN can access merchant dashboard, but if they try to access
+          // a route that doesn't allow SUPER_ADMIN, redirect to merchant dashboard
+          router.push('/merchant')
         } else {
+          // CUSTOMER or any other role
           router.push('/customer')
         }
         return

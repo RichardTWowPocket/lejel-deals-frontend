@@ -10,13 +10,16 @@ import {
   QrCode,
   Receipt,
   DollarSign,
-  Settings
+  Settings,
+  Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useCanAccessQRScanner } from '@/hooks/use-can-access-qr-scanner'
 
 export function BottomNav() {
   const pathname = usePathname()
   const isMerchant = pathname.startsWith('/merchant')
+  const canAccessQRScanner = useCanAccessQRScanner()
   
   // Customer navigation items
   const customerNavItems = [
@@ -46,7 +49,7 @@ export function BottomNav() {
   const merchantNavItems = [
     {
       name: 'Overview',
-      href: '/merchant',
+      href: '/merchant/dashboard',
       icon: LayoutDashboard,
     },
     {
@@ -58,13 +61,20 @@ export function BottomNav() {
       name: 'Scanner',
       href: '/merchant/verify',
       icon: QrCode,
+      hidden: !canAccessQRScanner, // Hide if user cannot access QR scanner
+    },
+    {
+      name: 'Staff',
+      href: '/merchant/staff',
+      icon: Users,
+      hidden: canAccessQRScanner, // Show Staff when QR Scanner is hidden (for OWNER/ADMIN)
     },
     {
       name: 'Orders',
       href: '/merchant/orders',
       icon: Receipt,
     },
-  ]
+  ].filter((item) => !item.hidden) // Filter out hidden items
 
   const navItems = isMerchant ? merchantNavItems : customerNavItems
   const profileHref = isMerchant ? '/merchant/settings' : '/customer/profile'
@@ -74,7 +84,7 @@ export function BottomNav() {
       <div className='flex items-center justify-around h-16 px-2'>
         {navItems.map((item) => {
           // Dashboard should only be active on exact match, others can match subroutes
-          const isActive = item.href === '/customer' || item.href === '/merchant'
+          const isActive = item.href === '/customer' || item.href === '/merchant/dashboard'
             ? pathname === item.href || pathname === item.href + '/'
             : pathname === item.href || pathname.startsWith(item.href + '/')
           return (

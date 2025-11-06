@@ -43,3 +43,40 @@ export interface AuthContextType extends AuthState {
   refreshToken: () => Promise<void>
 }
 
+export interface AppMerchantMembership {
+  id: string
+  merchantId: string
+  merchantRole: string
+  isOwner: boolean
+  permissions?: Record<string, unknown> | null
+  metadata?: Record<string, unknown> | null
+  createdAt: string
+  merchant?: {
+    id: string
+    name: string
+    email: string
+    isActive: boolean
+  } | null
+}
+
+export interface AppCustomerProfile {
+  id: string
+  userId: string
+  email: string
+  firstName: string | null
+  lastName: string | null
+  phone?: string | null
+  isActive: boolean
+  preferences?: Record<string, unknown> | null
+}
+
+export interface AppUserProfile {
+  id: string
+  email: string
+  role: string
+  isActive: boolean
+  merchantIds: string[]
+  merchantMemberships: AppMerchantMembership[]
+  customer: AppCustomerProfile | null
+}
+

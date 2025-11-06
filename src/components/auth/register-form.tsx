@@ -10,13 +10,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/use-auth'
-import { } from '@/components/ui/select'
+
+const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/
 
 const registerSchema = z
   .object({
     name: z.string().min(1, 'Name is required'),
     email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(
+        PASSWORD_RULE,
+        'Password must include upper & lowercase letters and a number',
+      ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -35,7 +42,6 @@ export function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   })
@@ -121,7 +127,6 @@ export function RegisterForm() {
           </button>
         </div>
       </div>
-
 
       <Button type='submit' className='w-full' disabled={isLoading}>
         {isLoading ? 'Creating account...' : 'Create Account'}

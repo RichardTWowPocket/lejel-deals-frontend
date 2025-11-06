@@ -191,19 +191,19 @@ export function formatCurrency(amount: number | string | null | undefined, curre
  */
 export function getPaymentStatusColor(status: string | null | undefined): string {
   if (!status || typeof status !== 'string') {
-    return 'text-gray-500'
+    return 'text-muted-foreground'
   }
 
   const statusMap: Record<string, string> = {
-    'PENDING': 'text-yellow-600 dark:text-yellow-400',
-    'PAID': 'text-green-600 dark:text-green-400',
-    'CANCELLED': 'text-red-600 dark:text-red-400',
-    'REFUNDED': 'text-gray-600 dark:text-gray-400',
-    'FAILED': 'text-red-600 dark:text-red-400',
-    'EXPIRED': 'text-gray-600 dark:text-gray-400'
+    'PENDING': 'text-warning',
+    'PAID': 'text-success',
+    'CANCELLED': 'text-destructive',
+    'REFUNDED': 'text-muted-foreground',
+    'FAILED': 'text-destructive',
+    'EXPIRED': 'text-muted-foreground'
   }
 
-  return statusMap[status.toUpperCase()] || 'text-gray-500'
+  return statusMap[status.toUpperCase()] || 'text-muted-foreground'
 }
 
 /**
@@ -213,17 +213,17 @@ export function getPaymentStatusColor(status: string | null | undefined): string
  */
 export function getPaymentStatusBgColor(status: string | null | undefined): string {
   if (!status || typeof status !== 'string') {
-    return 'bg-gray-100 dark:bg-gray-800'
+    return 'bg-muted'
   }
 
   const statusMap: Record<string, string> = {
-    'PENDING': 'bg-yellow-100 dark:bg-yellow-900/30',
-    'PAID': 'bg-green-100 dark:bg-green-900/30',
-    'CANCELLED': 'bg-red-100 dark:bg-red-900/30',
-    'REFUNDED': 'bg-gray-100 dark:bg-gray-900/30',
-    'FAILED': 'bg-red-100 dark:bg-red-900/30',
-    'EXPIRED': 'bg-gray-100 dark:bg-gray-900/30'
+    'PENDING': 'bg-warning/10',
+    'PAID': 'bg-success/10',
+    'CANCELLED': 'bg-destructive/10',
+    'REFUNDED': 'bg-muted',
+    'FAILED': 'bg-destructive/10',
+    'EXPIRED': 'bg-muted'
   }
 
-  return statusMap[status.toUpperCase()] || 'bg-gray-100 dark:bg-gray-800'
+  return statusMap[status.toUpperCase()] || 'bg-muted'
 }

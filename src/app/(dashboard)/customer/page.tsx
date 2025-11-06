@@ -79,16 +79,16 @@ export default function CustomerDashboardPage() {
         {/* Stats Overview Cards */}
         <div className='grid grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6'>
           {/* Active Coupons */}
-          <Card className='relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg'>
+          <Card className='relative overflow-hidden border-0 bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg'>
             <CardContent className='p-4 sm:p-6'>
               <div className='flex items-center justify-between'>
                 <div className='flex-1 min-w-0'>
-                  <p className='text-blue-100 text-xs sm:text-sm font-medium truncate'>Active Coupons</p>
+                  <p className='text-primary-foreground/90 text-xs sm:text-sm font-medium truncate'>Active Coupons</p>
                   <p className='text-2xl sm:text-3xl font-bold'>{totalActiveCoupons}</p>
-                  <p className='text-blue-100 text-[10px] sm:text-xs mt-1'>Ready to use</p>
+                  <p className='text-primary-foreground/90 text-[10px] sm:text-xs mt-1'>Ready to use</p>
                 </div>
-                <div className='rounded-full bg-blue-400/20 p-2 sm:p-3 flex-shrink-0'>
-                  <Ticket className='h-5 w-5 sm:h-6 sm:w-6 text-blue-100' />
+                <div className='rounded-full bg-primary-foreground/20 p-2 sm:p-3 flex-shrink-0'>
+                  <Ticket className='h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground' />
                 </div>
               </div>
             </CardContent>

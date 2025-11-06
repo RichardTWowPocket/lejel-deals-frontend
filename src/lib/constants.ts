@@ -19,12 +19,13 @@ export const DATETIME_FORMAT = 'dd MMM yyyy HH:mm';
 export const DEFAULT_CURRENCY = 'IDR';
 export const CURRENCY_SYMBOL = 'Rp';
 
-// User Roles
+// User Roles (must match backend Prisma schema)
+// Note: Staff members use a separate authentication system and StaffRole enum
+// Note: MerchantMembership has MerchantRole (OWNER, ADMIN, MANAGER, etc.) which is different
 export enum UserRole {
   CUSTOMER = 'CUSTOMER',
   MERCHANT = 'MERCHANT',
-  STAFF = 'STAFF',
-  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
 }
 
 // Deal Status
@@ -80,6 +81,15 @@ export enum StaffRole {
   CASHIER = 'CASHIER',
   SUPERVISOR = 'SUPERVISOR',
   ADMIN = 'ADMIN',
+}
+
+// Merchant Roles (from Prisma MerchantRole enum)
+export enum MerchantRole {
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  MANAGER = 'MANAGER',
+  SUPERVISOR = 'SUPERVISOR',
+  CASHIER = 'CASHIER',
 }
 
 // Verification Status
@@ -149,7 +159,7 @@ export const ROUTES = {
   CUSTOMER_PROFILE: '/customer/profile',
   
   // Merchant Dashboard
-  MERCHANT_DASHBOARD: '/merchant',
+  MERCHANT_DASHBOARD: '/merchant/dashboard',
   MERCHANT_DEALS: '/merchant/deals',
   MERCHANT_DEAL_CREATE: '/merchant/deals/create',
   MERCHANT_DEAL_EDIT: (id: string) => `/merchant/deals/${id}/edit`,

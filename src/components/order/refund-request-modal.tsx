@@ -177,22 +177,22 @@ export function RefundRequestModal({ order, onRefundRequested }: RefundRequestMo
           {/* Eligibility Check */}
           <div className={`p-4 rounded-lg flex items-center gap-3 ${
             eligibility.eligible 
-              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-              : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+              ? 'bg-success/10 border border-success/20' 
+              : 'bg-destructive/10 border border-destructive/20'
           }`}>
             {eligibility.eligible ? (
-              <CheckCircle className='h-5 w-5 text-green-600' />
+              <CheckCircle className='h-5 w-5 text-success' />
             ) : (
-              <XCircle className='h-5 w-5 text-red-600' />
+              <XCircle className='h-5 w-5 text-destructive' />
             )}
             <div>
               <p className={`font-medium ${
-                eligibility.eligible ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400'
+                eligibility.eligible ? 'text-success' : 'text-destructive'
               }`}>
                 {eligibility.eligible ? 'Refund Available' : 'Refund Not Available'}
               </p>
               <p className={`text-sm ${
-                eligibility.eligible ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
+                eligibility.eligible ? 'text-success/80' : 'text-destructive/80'
               }`}>
                 {eligibility.message}
               </p>

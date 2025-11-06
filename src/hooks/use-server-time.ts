@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { ApiResponse } from '@/types/common'
+import { systemKeys } from '@/lib/query-keys'
 
 export interface ServerTimeResponse {
   serverTime: string
@@ -13,7 +14,7 @@ export interface ServerTimeResponse {
  */
 export function useServerTime() {
   return useQuery({
-    queryKey: ['server-time'],
+    queryKey: systemKeys.serverTime(),
     queryFn: async () => {
       // For now, return current time since we don't have a server time endpoint
       // In production, this would call: /api/system/time

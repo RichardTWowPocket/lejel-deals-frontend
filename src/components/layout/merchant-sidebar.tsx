@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
+import { useUIStore } from '@/store'
 import { 
   LayoutDashboard, 
   Tag, 
@@ -19,7 +19,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { MerchantSelector } from '@/components/merchant/merchant-selector'
+import { useCanAccessQRScanner } from '@/hooks/use-can-access-qr-scanner'
 
 interface MerchantSidebarProps {
   className?: string
@@ -28,12 +31,14 @@ interface MerchantSidebarProps {
 export function MerchantSidebar({ className }: MerchantSidebarProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { sidebarCollapsed, toggleSidebar } = useUIStore()
+  const isCollapsed = sidebarCollapsed
+  const canAccessQRScanner = useCanAccessQRScanner()
 
   const navigationItems = [
     {
       name: 'Overview',
-      href: '/merchant',
+      href: '/merchant/dashboard',
       icon: LayoutDashboard,
     },
     {
@@ -45,6 +50,7 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
       name: 'QR Scanner',
       href: '/merchant/verify',
       icon: QrCode,
+      hidden: !canAccessQRScanner, // Hide if user cannot access QR scanner
     },
     {
       name: 'Redemptions',
@@ -76,7 +82,7 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
       href: '/merchant/settings',
       icon: Settings,
     },
-  ]
+  ].filter((item) => !item.hidden) // Filter out hidden items
 
   return (
     <div className={cn(
@@ -86,49 +92,61 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
     )}>
       {/* Logo Section */}
       <div className={cn(
-        'flex items-center border-b border-border/50 transition-all duration-300',
-        isCollapsed ? 'justify-center p-4' : 'justify-between p-6'
+        'flex flex-col border-b border-border/50 transition-all duration-300',
+        isCollapsed ? 'p-4' : 'p-6'
       )}>
-        {!isCollapsed ? (
-          <>
-            <div className='flex items-center gap-3 flex-1 min-w-0'>
-              <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-elegant-lg flex-shrink-0'>
+        <div className={cn(
+          'flex items-center transition-all duration-300',
+          isCollapsed ? 'justify-center' : 'justify-between'
+        )}>
+          {!isCollapsed ? (
+            <>
+              <div className='flex items-center gap-3 flex-1 min-w-0'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-elegant-lg flex-shrink-0'>
+                  <span className='text-xl font-bold text-white'>L</span>
+                </div>
+                <span className='text-xl font-bold text-gradient-primary truncate'>Merchant</span>
+              </div>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  toggleSidebar()
+                }}
+                className='h-10 w-10 p-0 hover:bg-muted/50 rounded-lg transition-all duration-200 hover:scale-105'
+                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                <ChevronLeft className='h-5 w-5' />
+              </Button>
+            </>
+          ) : (
+            <div className='flex flex-col items-center gap-3'>
+              <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-elegant-lg'>
                 <span className='text-xl font-bold text-white'>L</span>
               </div>
-              <span className='text-xl font-bold text-gradient-primary truncate'>Merchant</span>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  toggleSidebar()
+                }}
+                className='h-8 w-8 p-0 hover:bg-muted/50 rounded-lg transition-all duration-200 hover:scale-105'
+                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                <ChevronRight className='h-4 w-4' />
+              </Button>
             </div>
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setIsCollapsed(!isCollapsed)
-              }}
-              className='h-10 w-10 p-0 hover:bg-muted/50 rounded-lg transition-all duration-200 hover:scale-105'
-              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <ChevronLeft className='h-5 w-5' />
-            </Button>
-          </>
-        ) : (
-          <div className='flex flex-col items-center gap-3'>
-            <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-elegant-lg'>
-              <span className='text-xl font-bold text-white'>L</span>
-            </div>
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setIsCollapsed(!isCollapsed)
-              }}
-              className='h-8 w-8 p-0 hover:bg-muted/50 rounded-lg transition-all duration-200 hover:scale-105'
-              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <ChevronRight className='h-4 w-4' />
-            </Button>
+          )}
+        </div>
+        
+        {/* Merchant Selector (only when expanded and multiple merchants) */}
+        {!isCollapsed && (
+          <div className='mt-4'>
+            <MerchantSelector />
           </div>
         )}
       </div>
@@ -170,15 +188,18 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
             isCollapsed ? 'justify-center p-2' : 'gap-3 p-3'
           )}>
             {/* Profile Picture */}
-            <div className={cn(
-              'flex items-center justify-center rounded-full bg-white border-2 border-border shadow-sm',
+            <Avatar className={cn(
+              'border-2 border-border shadow-sm',
               isCollapsed ? 'h-10 w-10' : 'h-10 w-10'
             )}>
-              <User className={cn(
-                'text-muted-foreground',
-                isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
-              )} />
-            </div>
+              <AvatarImage src={user?.avatar || user?.image || undefined} alt={user?.name || 'Merchant'} />
+              <AvatarFallback className='bg-white text-muted-foreground'>
+                <User className={cn(
+                  'text-muted-foreground',
+                  isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
+                )} />
+              </AvatarFallback>
+            </Avatar>
             
             {/* User Info */}
             {!isCollapsed && (

@@ -3,36 +3,34 @@
 @tailwind utilities;
 
 :root {
-  /* Brand Colors - Improved palette */
-  --primary: 225 100% 50%; /* Rose-600 - More vibrant and modern */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 199 89% 48%; /* Sky-500 - Better contrast */
-  --secondary-foreground: 0 0% 100%;
-  --accent: 258 90% 66%; /* Violet-500 - More sophisticated */
-  --accent-foreground: 0 0% 100%;
+  /* Brand Colors - Warm Honey Palette */
+  --primary: 28 78% 52%; /* #E67E22 - Warm Orange */
+  --primary-foreground: 0 0% 100%; /* White */
+  --secondary: 37 88% 51%; /* #F39C12 - Golden Yellow */
+  --secondary-foreground: 0 0% 100%; /* White */
+  --accent: 48 89% 50%; /* #F1C40F - Sunny Yellow */
+  --accent-foreground: 0 0% 20%; /* #333333 - Dark Gray for text on yellow */
 
-  /* Status Colors - More accessible */
-  --success: 158 64% 52%; /* Emerald-500 */
-  --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%; /* Amber-500 */
-  --warning-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%; /* Red-500 */
-  --destructive-foreground: 0 0% 100%;
-  --info: 213 94% 68%; /* Blue-500 */
-  --info-foreground: 0 0% 100%;
+  /* Status Colors - Warm Honey */
+  --success: 145 63% 43%; /* #27AE60 - Forest Green */
+  --success-foreground: 0 0% 100%; /* White */
+  --warning: 37 88% 51%; /* #F39C12 - Amber */
+  --warning-foreground: 0 0% 100%; /* White */
+  --destructive: 6 78% 57%; /* #E74C3C - Warm Red */
+  --destructive-foreground: 0 0% 100%; /* White */
+  --info: 204 70% 53%; /* #3498DB - Sky Blue */
+  --info-foreground: 0 0% 100%; /* White */
 
-  /* Neutral Palette - Better contrast */
-  --background: 0 0% 100%;
-  --foreground: 222 84% 5%; /* Slate-900 - Better readability */
-  --card: 0 0% 100%;
-  --card-foreground: 222 84% 5%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 84% 5%;
-  --muted: 210 40% 96%; /* Slate-100 - Softer background */
-  --muted-foreground: 215 16% 47%; /* Slate-500 - Better contrast */
-  --border: 214 32% 91%; /* Slate-200 - Softer borders */
-  --input: 214 32% 91%;
-  --ring: 225 100% 50%;
+  /* Neutral Palette - Warm Honey */ /* #F7F7F7 - Warm off-white */ /* #2C2C2C - Dark Gray */
+  --card: 0 0% 100%; /* #FFFFFF - White */
+  --card-foreground: 0 0% 17%; /* #2C2C2C - Dark Gray */
+  --popover: 0 0% 100%; /* #FFFFFF - White */
+  --popover-foreground: 0 0% 17%; /* #2C2C2C - Dark Gray */
+  --muted: 210 20% 98%; /* #F8F9FA - Soft White */
+  --muted-foreground: 210 9% 45%; /* #6C757D - Medium Gray */
+  --border: 210 14% 83%; /* #DEE2E6 - Light Gray */
+  --input: 210 14% 83%; /* #DEE2E6 - Light Gray */
+  --ring: 28 78% 52%; /* Match primary - Warm Orange */
 
   /* Radius */
   --radius: 0.75rem; /* Slightly more rounded */
@@ -40,16 +38,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: 222 84% 5%; /* Slate-900 - Better dark background */
-    --foreground: 210 40% 98%; /* Slate-50 - Better contrast */
-    --card: 222 84% 5%; /* Slate-800 - Better card contrast */
-    --card-foreground: 210 40% 98%;
-    --popover: 222 84% 5%;
-    --popover-foreground: 210 40% 98%;
-    --muted: 217 33% 17%; /* Slate-700 - Better muted background */
-    --muted-foreground: 215 20% 65%; /* Slate-400 - Better muted text */
-    --border: 215 28% 17%; /* Slate-600 - Better border visibility */
-    --input: 215 28% 17%;
+    /* Keeping light mode colors even in dark mode preference for warm, happy theme */ /* #F7F7F7 - Warm off-white */ /* #2C2C2C - Dark Gray */
+    --card: 0 0% 100%; /* #FFFFFF - White */
+    --card-foreground: 0 0% 17%; /* #2C2C2C - Dark Gray */
+    --popover: 0 0% 100%; /* #FFFFFF - White */
+    --popover-foreground: 0 0% 17%; /* #2C2C2C - Dark Gray */
+    --muted: 210 20% 98%; /* #F8F9FA - Soft White */
+    --muted-foreground: 210 9% 45%; /* #6C757D - Medium Gray */
+    --border: 210 14% 83%; /* #DEE2E6 - Light Gray */
+    --input: 210 14% 83%; /* #DEE2E6 - Light Gray */
   }
 }
 
@@ -71,6 +68,59 @@
   
   *:focus-visible {
     @apply outline-2 outline-ring outline-offset-2;
+  }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 

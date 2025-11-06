@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { formatOrdersWithPagination } from '@/lib/responseFormatter'
 import { ENDPOINTS } from '@/lib/endpoints'
+import { customerKeys } from '@/lib/query-keys'
 
 interface OrdersResponse {
   data: any[]
@@ -11,7 +12,7 @@ interface OrdersResponse {
 export function useCustomerOrders(_customerId?: string, page: number = 1, limit: number = 10) {
   return useQuery({
     enabled: true,
-    queryKey: ['orders', 'me', page, limit],
+    queryKey: customerKeys.orders.list(page, limit),
     queryFn: async () => {
       const res = await api.get<OrdersResponse>(`${ENDPOINTS.orders.me}?page=${page}&limit=${limit}`)
       console.log('[useCustomerOrders] Response', res.data)

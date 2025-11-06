@@ -8,27 +8,41 @@ export function useCategories() {
     queryKey: ['categories'],
     queryFn: async () => {
       try {
-        const response = await api.get<ApiResponse<Category[]>>('/categories')
-        console.log('Categories API response:', response.data)
+        // Request all active categories without pagination (limit=1000 should be enough)
+        const response = await api.get<ApiResponse<{
+          data: Category[]
+          pagination: {
+            page: number
+            limit: number
+            total: number
+            totalPages: number
+          }
+        }>>('/categories?limit=1000&isActive=true')
         
-        const data = response.data.data
-        console.log('Categories data:', data, 'Type:', typeof data, 'IsArray:', Array.isArray(data))
+        // Response structure:
+        // Backend service returns: { data: [...], pagination: {...} }
+        // ApiResponse wrapper: { success: true, data: { data: [...], pagination: {...} }, ... }
+        // So: response.data.data = { data: [...], pagination: {...} }
+        // And: response.data.data.data = [...categories...]
+        const wrappedData = response.data.data
         
-        // If data is an array, return it directly
-        if (Array.isArray(data)) {
-          console.log('Returning array with length:', data.length)
-          return data
+        if (wrappedData && typeof wrappedData === 'object') {
+          // Check if it's the paginated structure with nested 'data' property
+          if ('data' in wrappedData && Array.isArray((wrappedData as any).data)) {
+            return (wrappedData as any).data as Category[]
+          }
+          // Check if it's directly an array (fallback)
+          if (Array.isArray(wrappedData)) {
+            return wrappedData as Category[]
+          }
         }
         
-        // If data is null/undefined, return empty array
-        if (!data) {
-          console.log('Data is null/undefined, returning empty array')
-          return []
-        }
-        
-        // If data is wrapped in an object, return it
-        console.log('Returning wrapped data:', data)
-        return data
+        // Fallback: return empty array
+        console.warn('Categories API returned unexpected structure:', {
+          responseData: response.data,
+          wrappedData,
+        })
+        return []
       } catch (error) {
         console.error('Categories API error:', error)
         return []

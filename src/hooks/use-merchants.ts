@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Merchant, MerchantFilters, MerchantListResponse } from '@/types/merchant'
 import { ApiResponse } from '@/types/common'
+import { publicMerchantKeys } from '@/lib/query-keys'
 
 export function useMerchants(filters?: MerchantFilters) {
   return useQuery({
-    queryKey: ['merchants', filters],
+    queryKey: publicMerchantKeys.lists(filters),
     queryFn: async () => {
       const params = new URLSearchParams()
       
@@ -45,7 +46,7 @@ export function useMerchants(filters?: MerchantFilters) {
 
 export function useMerchant(slug: string) {
   return useQuery({
-    queryKey: ['merchant', slug],
+    queryKey: publicMerchantKeys.detail(slug),
     queryFn: async () => {
       const response = await api.get<ApiResponse<Merchant>>(`/merchants/${slug}`)
       return response.data.data
@@ -56,7 +57,7 @@ export function useMerchant(slug: string) {
 
 export function useFeaturedMerchants(limit: number = 6) {
   return useQuery({
-    queryKey: ['merchants', 'featured', limit],
+    queryKey: publicMerchantKeys.featured(limit),
     queryFn: async () => {
       const response = await api.get<ApiResponse<MerchantListResponse>>(
         `/merchants?featured=true&limit=${limit}&verified=true`,

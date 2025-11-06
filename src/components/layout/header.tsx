@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { User, LogOut, ShoppingBag, Store, LayoutDashboard, Menu, X } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { getInitials } from '@/lib/utils'
 
 export function Header() {
   const { user, isAuthenticated, logout, isLoading } = useAuth()
@@ -24,10 +26,8 @@ export function Header() {
     switch (user.role) {
       case UserRole.MERCHANT:
         return '/merchant'
-      case UserRole.ADMIN:
-        return '/admin'
-      case UserRole.STAFF:
-        return '/merchant/scanner'
+      case UserRole.SUPER_ADMIN:
+        return '/merchant' // SUPER_ADMIN can access merchant dashboard
       default:
         return '/customer'
     }
@@ -94,9 +94,12 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant='ghost' className='flex items-center gap-3 h-12 px-4 rounded-xl hover:bg-muted/50 transition-all duration-300'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-lg font-bold text-white shadow-elegant-lg'>
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  <Avatar className='h-10 w-10 border-2 border-primary/20 shadow-elegant-lg'>
+                    <AvatarImage src={user.avatar || user.image || undefined} alt={user.name || 'User'} />
+                    <AvatarFallback className='bg-gradient-primary text-white text-lg font-bold'>
+                      {getInitials(user.name || user.email || 'User')}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className='hidden md:inline text-base font-semibold'>{user.name || 'User'}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -201,9 +204,12 @@ export function Header() {
               <div className='space-y-3'>
                 {/* User Info */}
                 <div className='flex flex-col items-center gap-3 px-4 py-3 rounded-xl'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-lg font-bold text-white shadow-elegant-lg'>
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  <Avatar className='h-10 w-10 border-2 border-primary/20 shadow-elegant-lg'>
+                    <AvatarImage src={user.avatar || user.image || undefined} alt={user.name || 'User'} />
+                    <AvatarFallback className='bg-gradient-primary text-white text-lg font-bold'>
+                      {getInitials(user.name || user.email || 'User')}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className='flex-1 min-w-0'>
                     <p className='text-sm font-medium text-center truncate'>{user.name}</p>
                     <p className='text-xs text-muted-foreground text-center truncate'>{user.email}</p>

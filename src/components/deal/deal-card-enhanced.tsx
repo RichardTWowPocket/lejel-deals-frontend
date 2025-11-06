@@ -155,13 +155,13 @@ export function DealCardEnhanced({ deal, timeOffset = 0 }: DealCardEnhancedProps
 
           {/* Social Proof / Low Inventory Warning */}
           {derived.hasLowInventory && derived.inventoryLeft !== null && (
-            <div className='mb-2 rounded-lg bg-orange-500/10 p-2 text-sm font-semibold text-orange-600 dark:text-orange-400'>
+            <div className='mb-2 rounded-lg bg-warning/10 p-2 text-sm font-semibold text-warning'>
               ⚠️ Hampir habis! Tersisa {derived.inventoryLeft} kupon
             </div>
           )}
 
           {derived.boughtToday && !derived.hasLowInventory && (
-            <div className='mb-2 text-sm font-medium text-green-600 dark:text-green-400'>
+            <div className='mb-2 text-sm font-medium text-success'>
               ✅ {derived.boughtToday}
             </div>
           )}

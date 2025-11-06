@@ -92,9 +92,9 @@ Required environment variables:
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3001
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your_midtrans_key
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3001
 ```
 
 ### Development

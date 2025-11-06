@@ -1,8 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import { 
   TrendingUp, 
   ShoppingBag, 
@@ -18,56 +15,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import {
+  ErrorDisplay,
+  KPICardsSkeleton,
+  PageHeaderSkeleton,
+} from '@/components/merchant/shared'
 import Link from 'next/link'
-
-interface MerchantOverview {
-  merchant: {
-    id: string
-    name: string
-    email: string
-  }
-  today: {
-    orders: number
-    redemptions: number
-    revenue: number
-    voucherValueRedeemed: number
-    ordersDetails: Array<{
-      id: string
-      orderNumber: string
-      totalAmount: number | string
-      customer?: { firstName?: string; lastName?: string }
-    }>
-    redemptionsDetails: Array<{
-      id: string
-      coupon: {
-        deal: { title: string }
-        order: { orderNumber: string }
-      }
-    }>
-  }
-  activeDeals: number
-  activeDealsList: Array<{ id: string; title: string }>
-  lowInventoryDeals: Array<{
-    id: string
-    title: string
-    remaining: number
-    total: number
-    percentageLeft: number
-  }>
-  expiringSoonDeals: Array<{
-    id: string
-    title: string
-    expiresAt: string
-  }>
-  redemptionRate: number
-  alerts: {
-    lowInventory: number
-    expiringSoon: number
-    hasAlerts: boolean
-  }
-}
+import { useMerchantOverview, type MerchantOverview } from '@/hooks/merchant'
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -95,59 +50,57 @@ function formatTimeRemaining(expiresAt: string): string {
 }
 
 export default function MerchantOverviewPage() {
-  const [merchantId] = useState<string>('demo-merchant-1') // TODO: Get from auth
-
-  const { data, isLoading, error } = useQuery<MerchantOverview>({
-    queryKey: ['merchantOverview', merchantId],
-    queryFn: async () => {
-      const { data } = await axios.get<MerchantOverview>(
-        `${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}/overview`,
-        { withCredentials: true }
-      )
-      return data
-    },
-    enabled: !!merchantId,
-  })
+  const { data, isLoading, isFetching, error, refetch } = useMerchantOverview()
 
   if (isLoading) {
     return (
       <div className='space-y-6'>
-        <div className='space-y-2'>
-          <Skeleton className='h-8 w-64' />
-          <Skeleton className='h-4 w-96' />
-        </div>
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className='h-4 w-32' />
-                <Skeleton className='h-8 w-24' />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+        <PageHeaderSkeleton />
+        <KPICardsSkeleton count={4} />
       </div>
     )
   }
 
   if (error) {
     return (
-      <Alert variant='destructive'>
-        <AlertTriangle className='h-4 w-4' />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          Failed to load merchant overview. Please try again later.
-        </AlertDescription>
-      </Alert>
+      <ErrorDisplay
+        error={error}
+        onRetry={() => {
+          refetch().catch(console.error)
+        }}
+        title="Gagal memuat dashboard merchant"
+      />
     )
   }
 
   if (!data) return null
 
+  // Background refetch indicator
+  const isRefreshing = !isLoading && isFetching
+
+  // Handle both old API structure (flat) and new structure (nested)
+  // Backend currently returns: { merchantId, todayOrders, todayRevenue, totalRevenue, activeDeals }
+  // Frontend expects: { merchant, today: { orders, redemptions, revenue, ... }, ... }
+  const todayOrders = (data as any).today?.orders ?? (data as any).todayOrders ?? 0
+  const todayRedemptions = (data as any).today?.redemptions ?? 0
+  const todayRevenue = typeof (data as any).today?.revenue === 'number' 
+    ? (data as any).today.revenue 
+    : typeof (data as any).todayRevenue === 'string'
+    ? parseFloat((data as any).todayRevenue)
+    : (data as any).todayRevenue ?? 0
+  const redemptionRate = (data as any).redemptionRate ?? 0
+  const merchantName = (data as any).merchant?.name ?? 'Merchant'
+  const activeDeals = (data as any).activeDeals ?? 0
+  const lowInventoryDeals = (data as any).lowInventoryDeals ?? []
+  const expiringSoonDeals = (data as any).expiringSoonDeals ?? []
+  const alerts = (data as any).alerts ?? { hasAlerts: false, lowInventory: 0, expiringSoon: 0 }
+  const ordersDetails = (data as any).today?.ordersDetails ?? []
+  const redemptionsDetails = (data as any).today?.redemptionsDetails ?? []
+
   const kpiCards = [
     {
       title: 'Orders Today',
-      value: data.today.orders,
+      value: todayOrders,
       icon: ShoppingBag,
       description: 'Paid orders',
       color: 'text-blue-600',
@@ -155,7 +108,7 @@ export default function MerchantOverviewPage() {
     },
     {
       title: 'Redemptions Today',
-      value: data.today.redemptions,
+      value: todayRedemptions,
       icon: QrCode,
       description: 'Vouchers redeemed',
       color: 'text-green-600',
@@ -163,7 +116,7 @@ export default function MerchantOverviewPage() {
     },
     {
       title: 'Revenue Today',
-      value: formatCurrency(data.today.revenue),
+      value: formatCurrency(todayRevenue),
       icon: DollarSign,
       description: 'Total revenue',
       color: 'text-emerald-600',
@@ -171,7 +124,7 @@ export default function MerchantOverviewPage() {
     },
     {
       title: 'Redemption Rate',
-      value: `${data.redemptionRate.toFixed(1)}%`,
+      value: `${redemptionRate.toFixed(1)}%`,
       icon: TrendingUp,
       description: 'Vouchers used',
       color: 'text-purple-600',
@@ -181,29 +134,37 @@ export default function MerchantOverviewPage() {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
-      <div>
+      {/* Background Refetch Indicator */}
+      {isRefreshing && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span>Refreshing dashboard...</span>
+        </div>
+      )}
+
+      {/* Header - Hidden on mobile, visible on md and up */}
+      <div className='hidden md:block'>
         <h1 className='text-3xl font-bold text-foreground'>Dashboard</h1>
         <p className='text-muted-foreground mt-1'>
-          Welcome back, {data.merchant.name}
+          Welcome back, {merchantName}
         </p>
       </div>
 
       {/* Alerts */}
-      {data.alerts.hasAlerts && (
+      {alerts.hasAlerts && (
         <Alert>
           <AlertTriangle className='h-4 w-4' />
           <AlertTitle>Action Required</AlertTitle>
           <AlertDescription className='flex items-center gap-4 mt-2'>
             <span>
-              {data.alerts.lowInventory > 0 && (
+              {alerts.lowInventory > 0 && (
                 <Badge variant='destructive' className='mr-2'>
-                  {data.alerts.lowInventory} Low Inventory Deals
+                  {alerts.lowInventory} Low Inventory Deals
                 </Badge>
               )}
-              {data.alerts.expiringSoon > 0 && (
+              {alerts.expiringSoon > 0 && (
                 <Badge variant='outline' className='mr-2'>
-                  {data.alerts.expiringSoon} Expiring Soon
+                  {alerts.expiringSoon} Expiring Soon
                 </Badge>
               )}
             </span>
@@ -211,48 +172,47 @@ export default function MerchantOverviewPage() {
         </Alert>
       )}
 
-      {/* KPI Cards */}
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      {/* KPI Cards - Responsive grid: 2 cols on mobile, 2 on tablet, 4 on desktop */}
+      <div className='grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4 -mt-6 md:mt-0'>
         {kpiCards.map((kpi) => (
           <Card key={kpi.title} className='hover:shadow-lg transition-shadow'>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6'>
+              <CardTitle className='text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight'>
                 {kpi.title}
               </CardTitle>
-              <div className={`h-10 w-10 rounded-full ${kpi.bgColor} flex items-center justify-center`}>
-                <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
+              <div className={`h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full ${kpi.bgColor} flex items-center justify-center flex-shrink-0`}>
+                <kpi.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 ${kpi.color}`} />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>{kpi.value}</div>
-              <p className='text-xs text-muted-foreground mt-1'>{kpi.description}</p>
+            <CardContent className='p-3 sm:p-6 pt-0'>
+              <div className='text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight'>{kpi.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Low Inventory Deals */}
-      {data.lowInventoryDeals.length > 0 && (
-        <Card>
+      {lowInventoryDeals.length > 0 && (
+        <Card className='mt-6 md:mt-0'>
           <CardHeader>
-            <div className='flex items-center justify-between'>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
               <div>
                 <CardTitle className='flex items-center gap-2'>
                   <Package className='h-5 w-5 text-orange-600' />
                   Low Inventory Alert
                 </CardTitle>
                 <CardDescription>
-                  {data.lowInventoryDeals.length} deals are running low
+                  {lowInventoryDeals.length} deals are running low
                 </CardDescription>
               </div>
               <Link href='/merchant/deals'>
-                <Button variant='outline'>View All</Button>
+                <Button variant='outline' className='w-full sm:w-auto'>View All</Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
             <div className='space-y-3'>
-              {data.lowInventoryDeals.slice(0, 3).map((deal) => (
+              {lowInventoryDeals.slice(0, 3).map((deal: any) => (
                 <div key={deal.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
                   <div className='flex-1'>
                     <p className='font-medium text-sm'>{deal.title}</p>
@@ -273,27 +233,27 @@ export default function MerchantOverviewPage() {
       )}
 
       {/* Expiring Soon Deals */}
-      {data.expiringSoonDeals.length > 0 && (
+      {expiringSoonDeals.length > 0 && (
         <Card>
           <CardHeader>
-            <div className='flex items-center justify-between'>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
               <div>
                 <CardTitle className='flex items-center gap-2'>
                   <Clock className='h-5 w-5 text-amber-600' />
                   Expiring Soon
                 </CardTitle>
                 <CardDescription>
-                  {data.expiringSoonDeals.length} deals expiring within 7 days
+                  {expiringSoonDeals.length} deals expiring within 7 days
                 </CardDescription>
               </div>
               <Link href='/merchant/deals'>
-                <Button variant='outline'>View All</Button>
+                <Button variant='outline' className='w-full sm:w-auto'>View All</Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
             <div className='space-y-3'>
-              {data.expiringSoonDeals.slice(0, 3).map((deal) => (
+              {expiringSoonDeals.slice(0, 3).map((deal: any) => (
                 <div key={deal.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
                   <div className='flex-1'>
                     <p className='font-medium text-sm'>{deal.title}</p>
@@ -312,18 +272,18 @@ export default function MerchantOverviewPage() {
       {/* Active Deals Summary */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
             <div>
               <CardTitle className='flex items-center gap-2'>
                 <Tag className='h-5 w-5 text-blue-600' />
                 Active Deals
               </CardTitle>
               <CardDescription>
-                {data.activeDeals} deals are currently active
+                {activeDeals} deals are currently active
               </CardDescription>
             </div>
             <Link href='/merchant/deals'>
-              <Button variant='outline'>Manage Deals</Button>
+              <Button variant='outline' className='w-full sm:w-auto'>Manage Deals</Button>
             </Link>
           </div>
         </CardHeader>
@@ -332,7 +292,7 @@ export default function MerchantOverviewPage() {
             <div className='text-center'>
               <Activity className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
               <p className='text-sm text-muted-foreground'>
-                {data.activeDeals} active deals running
+                {activeDeals} active deals running
               </p>
             </div>
           </div>
@@ -351,9 +311,9 @@ export default function MerchantOverviewPage() {
             <CardDescription>Last 5 orders today</CardDescription>
           </CardHeader>
           <CardContent>
-            {data.today.ordersDetails.length > 0 ? (
+            {ordersDetails.length > 0 ? (
               <div className='space-y-3'>
-                {data.today.ordersDetails.slice(0, 5).map((order: any) => (
+                {ordersDetails.slice(0, 5).map((order: any) => (
                   <div key={order.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
                     <div>
                       <p className='text-sm font-medium'>{order.orderNumber}</p>
@@ -381,9 +341,9 @@ export default function MerchantOverviewPage() {
             <CardDescription>Last 5 redemptions today</CardDescription>
           </CardHeader>
           <CardContent>
-            {data.today.redemptionsDetails.length > 0 ? (
+            {redemptionsDetails.length > 0 ? (
               <div className='space-y-3'>
-                {data.today.redemptionsDetails.slice(0, 5).map((redemption: any) => (
+                {redemptionsDetails.slice(0, 5).map((redemption: any) => (
                   <div key={redemption.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
                     <div>
                       <p className='text-sm font-medium'>{redemption.coupon.deal.title}</p>

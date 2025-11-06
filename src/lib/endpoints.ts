@@ -3,8 +3,9 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhos
 export const ENDPOINTS = {
   auth: {
     health: '/auth/health',
+    verify: '/auth/verify',
+    register: '/auth/register',
     profile: '/auth/profile',
-    refresh: '/auth/refresh',
   },
   deals: {
     list: '/deals',
@@ -41,7 +42,6 @@ export const ENDPOINTS = {
     insights: (id: string) => `/customers/${id}/insights`,
     preferences: (id: string) => `/customers/${id}/preferences`,
     create: '/customers',
-    createFromSupabase: '/customers/create-from-supabase',
     deactivate: (id: string) => `/customers/${id}/deactivate`,
     reactivate: (id: string) => `/customers/${id}/reactivate`,
   },

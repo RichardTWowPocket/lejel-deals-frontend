@@ -1,85 +1,169 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { useMerchantDeals } from '@/hooks/use-merchant'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useMerchantFilters } from '@/hooks/use-merchant-filters'
+import { useMerchantDeals } from '@/hooks/merchant'
+import { DealFilters, DealList } from '@/components/merchant/deals'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ErrorDisplay } from '@/components/merchant/shared/error-display'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import type { DealFilters as DealFiltersType } from '@/types/deal'
+import { Plus } from 'lucide-react'
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(amount)
-}
-
+/**
+ * Merchant Deals Page
+ * 
+ * Main page for managing merchant deals.
+ * Features:
+ * - List view with filters (status, category, search)
+ * - URL-synced filters
+ * - Pagination
+ * - Responsive table/card views
+ */
 export default function MerchantDealsPage() {
-  const [merchantId] = useState<string>('demo-merchant-1')
-  const [page, setPage] = useState<number>(1)
-  const limit = 10
+  const { filters, updateFilters } = useMerchantFilters<DealFiltersType>({
+    defaults: {
+      page: 1,
+      limit: 10,
+      status: undefined,
+      categoryId: undefined,
+      search: undefined,
+    },
+  })
 
-  const { data, isLoading } = useMerchantDeals(merchantId, page, limit)
+  const { data, isLoading, isFetching, error, refetch } = useMerchantDeals(filters)
+
+  const totalPages = data?.pagination?.totalPages || 1
+  const currentPage = filters.page || 1
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold'>Deals</h1>
-          <p className='text-sm text-muted-foreground'>Manage your merchant deals</p>
-        </div>
-        <Link href='/merchant/deals/new'>
+    <div className="space-y-6 relative">
+      {/* Create Deal Button - Desktop */}
+      <div className="hidden md:flex justify-end">
+        <Link href="/merchant/deals/new">
           <Button>Create Deal</Button>
         </Link>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Deals List</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className='space-y-3'>
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className='h-16 w-full' />
-              ))}
-            </div>
-          ) : (
-            <div className='space-y-3'>
-              {(data?.data || data?.items || []).map((deal: any) => (
-                <div key={deal.id} className='flex items-center justify-between p-4 rounded-md border'>
-                  <div className='min-w-0'>
-                    <div className='flex items-center gap-2'>
-                      <p className='font-medium truncate'>{deal.title}</p>
-                      <Badge variant='secondary'>{deal.status}</Badge>
-                    </div>
-                    <p className='text-xs text-muted-foreground mt-1'>
-                      Pay {formatCurrency(Number(deal.dealPrice || deal.price || 0))} • Value {formatCurrency(Number(deal.discountPrice || deal.value || 0))}
-                    </p>
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <Link href={`/merchant/deals/${deal.id}`}>
-                      <Button variant='outline' size='sm'>Edit</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Filters */}
+      <DealFilters />
 
-          <div className='flex items-center justify-end gap-2 mt-4'>
-            <Button variant='outline' size='sm' onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Prev</Button>
-            <span className='text-sm text-muted-foreground'>Page {page}</span>
-            <Button variant='outline' size='sm' onClick={() => setPage((p) => p + 1)}>Next</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Error State */}
+      {error && (
+        <ErrorDisplay
+          error={error}
+          onRetry={() => {
+            refetch()
+          }}
+          title="Failed to load deals"
+        />
+      )}
+
+      {/* Background Refetch Indicator */}
+      {!isLoading && isFetching && data && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span>Refreshing...</span>
+        </div>
+      )}
+
+      {/* Deals List */}
+      {!error && (
+        <DealList
+          deals={data?.deals || []}
+          isLoading={isLoading}
+          error={error}
+          onRetry={refetch}
+        />
+      )}
+
+      {/* Pagination */}
+      {!error && data && totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (currentPage > 1) {
+                    updateFilters({ page: currentPage - 1 })
+                  }
+                }}
+                className={
+                  currentPage <= 1 ? 'pointer-events-none opacity-50' : ''
+                }
+              />
+            </PaginationItem>
+
+            {/* Page Numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number
+              if (totalPages <= 5) {
+                pageNum = i + 1
+              } else if (currentPage <= 3) {
+                pageNum = i + 1
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i
+              } else {
+                pageNum = currentPage - 2 + i
+              }
+
+              return (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      updateFilters({ page: pageNum })
+                    }}
+                    isActive={currentPage === pageNum}
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            })}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (currentPage < totalPages) {
+                    updateFilters({ page: currentPage + 1 })
+                  }
+                }}
+                className={
+                  currentPage >= totalPages
+                    ? 'pointer-events-none opacity-50'
+                    : ''
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+
+      {/* Floating Action Button - Mobile */}
+      <Link
+        href="/merchant/deals/new"
+        className="fixed bottom-20 right-4 z-50 md:hidden"
+      >
+        <Button
+          size="lg"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </Link>
     </div>
   )
 }
-
-
-
-

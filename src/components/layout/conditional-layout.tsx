@@ -12,8 +12,9 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname()
   
   // Check if current path is a dashboard route
+  // Note: /merchant is a public page, but /merchant/* are dashboard routes
   const isDashboardRoute = pathname.startsWith('/customer') || 
-                          pathname.startsWith('/merchant') || 
+                          (pathname.startsWith('/merchant/') && pathname !== '/merchant') || 
                           pathname.startsWith('/admin') ||
                           pathname.startsWith('/staff')
 

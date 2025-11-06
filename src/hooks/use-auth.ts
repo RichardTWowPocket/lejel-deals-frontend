@@ -1,42 +1,32 @@
-import { useSession, signIn, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import api from '@/lib/api'
+import { useRouter } from 'next/navigation'
+import { useSession, signIn, signOut, getSession } from 'next-auth/react'
+import toast from 'react-hot-toast'
+import { apiClient } from '@/lib/api'
+import { ENDPOINTS } from '@/lib/endpoints'
+import { UserRole } from '@/lib/constants'
 
 export function useAuth() {
   const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const user = session?.user
-  const isAuthenticated = !!session
-  const isLoadingSession = status === 'loading'
-
-  const register = async (userData: {
-    name: string
-    email: string
-    password: string
-  }) => {
+  const register = async (userData: { name?: string; email: string; password: string }) => {
     setIsLoading(true)
     try {
-      // Create the user in backend first
-      await api.post('/auth/register', {
-        name: userData.name,
+      await apiClient.post(ENDPOINTS.auth.register, {
         email: userData.email,
         password: userData.password,
+        name: userData.name,
       })
 
-      // Then sign in via NextAuth
-      const signInResult = await signIn('credentials', {
-        email: userData.email,
-        password: userData.password,
-        redirect: false,
-        callbackUrl: '/customer',
-      })
-      if (signInResult?.ok) {
-        router.push(signInResult.url || '/customer')
-      }
-      return signInResult
+      toast.success('Registration successful! You can now log in.')
+
+      setTimeout(() => {
+        router.push('/login')
+      }, 1500)
+
+      return { ok: true }
     } finally {
       setIsLoading(false)
     }
@@ -51,9 +41,27 @@ export function useAuth() {
         redirect: false,
         callbackUrl: '/customer',
       })
+
       if (result?.ok) {
-        router.push(result.url || '/customer')
+        // Wait a bit for session to update, then get the session to check user role
+        await new Promise(resolve => setTimeout(resolve, 100))
+        const updatedSession = await getSession()
+        
+        // Determine redirect path based on user role
+        let redirectPath = '/customer' // Default for CUSTOMER
+        const userRole = updatedSession?.user?.role as UserRole | undefined
+        
+        if (userRole === UserRole.MERCHANT || userRole === UserRole.SUPER_ADMIN) {
+          redirectPath = '/merchant/dashboard'
+        } else if (userRole === UserRole.CUSTOMER) {
+          redirectPath = '/customer'
+        }
+        
+        // Use Next.js router which will navigate within the same frontend app
+        router.push(redirectPath)
+        router.refresh() // Refresh to ensure session is updated
       }
+
       return result
     } finally {
       setIsLoading(false)
@@ -64,11 +72,14 @@ export function useAuth() {
     await signOut({ redirect: true, callbackUrl: '/login' })
   }
 
+  const user = session?.user as any
+  const isAuthenticated = status === 'authenticated'
+
   return {
     user,
     session,
     isAuthenticated,
-    isLoading: isLoading || isLoadingSession,
+    isLoading: isLoading || status === 'loading',
     register,
     login,
     logout,

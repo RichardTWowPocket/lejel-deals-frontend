@@ -16,7 +16,8 @@ import {
   Menu,
   Settings
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 interface SidebarProps {
   className?: string
@@ -144,15 +145,18 @@ export function Sidebar({ className }: SidebarProps) {
             isCollapsed ? 'justify-center p-2' : 'gap-3 p-3'
           )}>
             {/* Profile Picture */}
-            <div className={cn(
-              'flex items-center justify-center rounded-full bg-white border-2 border-border shadow-sm',
+            <Avatar className={cn(
+              'border-2 border-border shadow-sm',
               isCollapsed ? 'h-10 w-10' : 'h-10 w-10'
             )}>
-              <User className={cn(
-                'text-muted-foreground',
-                isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
-              )} />
-            </div>
+              <AvatarImage src={user?.avatar || user?.image || undefined} alt={user?.name || 'User'} />
+              <AvatarFallback className='bg-white text-muted-foreground'>
+                <User className={cn(
+                  'text-muted-foreground',
+                  isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
+                )} />
+              </AvatarFallback>
+            </Avatar>
             
             {/* User Info */}
             {!isCollapsed && (

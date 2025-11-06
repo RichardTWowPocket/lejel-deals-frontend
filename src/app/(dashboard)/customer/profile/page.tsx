@@ -27,12 +27,15 @@ import {
   CheckCircle,
   AlertCircle,
   Edit,
-  Camera
+  Camera,
+  LogOut
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { getInitials } from '@/lib/utils'
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, logout } = useAuth()
   const [activeTab, setActiveTab] = useState('personal')
   const [isSaving, setIsSaving] = useState(false)
   
@@ -193,11 +196,12 @@ export default function ProfilePage() {
                 <div className='flex flex-col items-center space-y-4 md:hidden'>
                   {/* Avatar with verification badge */}
                   <div className='relative'>
-                    <div className='h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-background shadow-elegant-lg bg-gradient-primary flex items-center justify-center'>
-                      <span className='text-3xl sm:text-4xl font-bold text-white'>
+                    <Avatar className='h-28 w-28 sm:h-32 sm:w-32 border-4 border-background shadow-elegant-lg'>
+                      <AvatarImage src={user?.avatar || user?.image || undefined} alt={user?.name || 'User'} className='object-cover' />
+                      <AvatarFallback className='bg-gradient-primary text-white text-3xl sm:text-4xl font-bold'>
                         {getUserInitials()}
-                      </span>
-                    </div>
+                      </AvatarFallback>
+                    </Avatar>
                     {/* Verification Badge */}
                     <div className='absolute top-0 right-0 h-8 w-8 rounded-full bg-green-500 border-4 border-card flex items-center justify-center shadow-md'>
                       <CheckCircle className='h-4 w-4 text-white' />
@@ -247,11 +251,12 @@ export default function ProfilePage() {
                 <div className='hidden md:flex items-center gap-6'>
                   {/* Avatar */}
                   <div className='relative'>
-                    <div className='h-24 w-24 rounded-full border-4 border-background shadow-lg bg-gradient-primary flex items-center justify-center'>
-                      <span className='text-2xl font-bold text-white'>
+                    <Avatar className='h-24 w-24 border-4 border-background shadow-lg'>
+                      <AvatarImage src={user?.avatar || user?.image || undefined} alt={user?.name || 'User'} className='object-cover' />
+                      <AvatarFallback className='bg-gradient-primary text-white text-2xl font-bold'>
                         {getUserInitials()}
-                      </span>
-                    </div>
+                      </AvatarFallback>
+                    </Avatar>
                     <Button
                       size='sm'
                       variant='secondary'
@@ -684,6 +689,28 @@ export default function ProfilePage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Logout Button */}
+        <Card className='border-destructive/20'>
+          <CardContent className='p-6'>
+            <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+              <div className='flex-1 text-center sm:text-left'>
+                <h3 className='text-lg font-semibold mb-1'>Keluar dari Akun</h3>
+                <p className='text-sm text-muted-foreground'>
+                  Anda akan keluar dari akun dan perlu login kembali untuk mengakses dashboard
+                </p>
+              </div>
+              <Button
+                variant='destructive'
+                onClick={logout}
+                className='w-full sm:w-auto gap-2'
+              >
+                <LogOut className='h-4 w-4' />
+                Logout
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </ProtectedRoute>
   )

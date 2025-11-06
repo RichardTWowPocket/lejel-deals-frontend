@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { getSession, signOut } from 'next-auth/react';
 
 // API configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1';
@@ -15,11 +16,17 @@ const api: AxiosInstance = axios.create({
 // Request interceptor for adding auth token
 api.interceptors.request.use(
   async (config) => {
-    // Get token from localStorage
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window === 'undefined') {
+      return config;
     }
+
+    const session = await getSession();
+    const accessToken = session?.accessToken as string | undefined;
+
+    if (accessToken && config.headers) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     return config;
   },
   (error) => {
@@ -35,15 +42,7 @@ api.interceptors.response.use(
   },
   async (error: AxiosError) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      // A 401 from the backend means authentication has failed - sign out the user
-      try {
-        const { signOut } = await import('next-auth/react');
-        await signOut({ redirect: true, callbackUrl: '/login' });
-      } catch {
-        // Fallback if signOut fails
-        localStorage.removeItem('access_token');
-        window.location.href = '/login';
-      }
+      await signOut({ callbackUrl: '/login' });
     }
     
     return Promise.reject(error);
@@ -66,6 +65,7 @@ export interface ApiError {
   method: string;
   message: string;
   error: string;
+  errors?: Record<string, string[]>; // Validation errors
 }
 
 // Generic API request function

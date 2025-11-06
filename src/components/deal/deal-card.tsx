@@ -43,7 +43,7 @@ export function DealCard({ deal, featured = false }: DealCardProps) {
         {/* Overlay Badges */}
         <div className='absolute left-4 top-4 flex flex-col gap-2'>
           {deal.featured && (
-            <Badge className='bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-elegant-lg font-semibold'>
+            <Badge variant='warning' className='shadow-elegant-lg font-semibold'>
               ⭐ Featured
             </Badge>
           )}
@@ -134,7 +134,7 @@ export function DealCard({ deal, featured = false }: DealCardProps) {
             {deal.quantity && (
               <div className='h-2 w-full overflow-hidden rounded-full bg-muted shadow-inner'>
                 <div
-                  className='h-full bg-gradient-to-r from-destructive to-orange-500 transition-all duration-500 shadow-elegant'
+                  className='h-full bg-gradient-to-r from-destructive to-warning transition-all duration-500 shadow-elegant'
                   style={{
                     width: `${(deal.quantityAvailable / deal.quantity) * 100}%`,
                   }}

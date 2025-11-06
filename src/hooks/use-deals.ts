@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Deal, DealFilters, DealListResponse } from '@/types/deal'
 import { ApiResponse } from '@/types/common'
+import { dealKeys } from '@/lib/query-keys'
 
 export function useDeals(filters?: DealFilters) {
   return useQuery({
-    queryKey: ['deals', filters],
+    queryKey: dealKeys.lists(filters),
     queryFn: async () => {
       const params = new URLSearchParams()
       
@@ -48,7 +49,7 @@ export function useDeals(filters?: DealFilters) {
 
 export function useDeal(slug: string) {
   return useQuery({
-    queryKey: ['deal', slug],
+    queryKey: dealKeys.detail(slug),
     queryFn: async () => {
       const response = await api.get<ApiResponse<Deal>>(`/deals/${slug}`)
       return response.data.data
@@ -59,7 +60,7 @@ export function useDeal(slug: string) {
 
 export function useFeaturedDeals(limit: number = 6) {
   return useQuery({
-    queryKey: ['deals', 'featured', limit],
+    queryKey: dealKeys.featured(limit),
     queryFn: async () => {
       const response = await api.get<ApiResponse<DealListResponse>>(
         `/deals?featured=true&limit=${limit}&status=ACTIVE`,

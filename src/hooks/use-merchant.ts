@@ -1,7 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import { apiClient } from '@/lib/api'
+import { handleApiError } from '@/lib/error-handler'
+import { useMerchant as useMerchantContext } from '@/lib/merchant-context'
+import { merchantKeys } from '@/lib/query-keys'
 
 export interface MerchantOverview {
   merchant: {
@@ -50,46 +53,40 @@ export interface MerchantOverview {
   }
 }
 
-export function useMerchantOverview(merchantId?: string) {
+export function useMerchantOverview() {
+  const { activeMerchantId } = useMerchantContext()
+  
   return useQuery({
-    queryKey: ['merchantOverview', merchantId],
+    queryKey: merchantKeys.overview.me(activeMerchantId),
     queryFn: async () => {
-      if (!merchantId) throw new Error('Merchant ID is required')
-      const { data } = await axios.get<MerchantOverview>(
-        `${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}/overview`,
-        { withCredentials: true }
-      )
-      return data
+      // Use apiClient which automatically adds Authorization header via interceptor
+      const url = activeMerchantId
+        ? `/merchants/me/overview?merchantId=${activeMerchantId}`
+        : `/merchants/me/overview`
+      
+      return apiClient.get<MerchantOverview>(url)
     },
-    enabled: !!merchantId,
+    staleTime: 30 * 1000, // 30 seconds (real-time dashboard data)
+    gcTime: 2 * 60 * 1000, // 2 minutes (garbage collection)
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   })
 }
 
-export function useMerchantPayouts(merchantId?: string, period: 'day' | 'week' | 'month' | 'year' | 'all' = 'all') {
-  return useQuery({
-    queryKey: ['merchantPayouts', merchantId, period],
-    queryFn: async () => {
-      if (!merchantId) throw new Error('Merchant ID is required')
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}/payouts?period=${period}`,
-        { withCredentials: true }
-      )
-      return data
-    },
-    enabled: !!merchantId,
-  })
-}
+// Note: useMerchantPayouts has been moved to hooks/merchant/use-merchant-payouts.ts
+// This export is kept for backwards compatibility but should be removed
+// Use: import { useMerchantPayouts } from '@/hooks/merchant'
 
 export function useMerchantDeals(merchantId?: string, page: number = 1, limit: number = 10) {
   return useQuery({
-    queryKey: ['merchantDeals', merchantId, page, limit],
+    queryKey: merchantKeys.deals.list(merchantId, page, limit),
     queryFn: async () => {
       if (!merchantId) throw new Error('Merchant ID is required')
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/deals?merchantId=${merchantId}&page=${page}&limit=${limit}`,
-        { withCredentials: true }
+      // Use apiClient which automatically adds Authorization header via interceptor
+      return apiClient.get(
+        `/deals?merchantId=${merchantId}&page=${page}&limit=${limit}`
       )
-      return data
     },
     enabled: !!merchantId,
   })

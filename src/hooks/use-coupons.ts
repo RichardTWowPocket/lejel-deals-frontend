@@ -3,6 +3,7 @@ import api from '@/lib/api'
 import { formatCouponsWithPagination, formatPaginated } from '@/lib/responseFormatter'
 import { ENDPOINTS } from '@/lib/endpoints'
 import { CouponStatus } from '@/types/coupon'
+import { customerKeys } from '@/lib/query-keys'
 
 interface CouponsResponse {
   coupons: any[]
@@ -12,7 +13,7 @@ interface CouponsResponse {
 export function useCouponsByOrder(orderId?: string) {
   return useQuery({
     enabled: !!orderId,
-    queryKey: ['coupons', 'order', orderId],
+    queryKey: customerKeys.coupons.byOrder(orderId!),
     queryFn: async () => {
       const res = await api.get<any[]>(ENDPOINTS.coupons.byOrder(orderId!))
       return res.data
@@ -22,7 +23,7 @@ export function useCouponsByOrder(orderId?: string) {
 
 export function useMyCoupons(page: number = 1, limit: number = 10, status?: CouponStatus) {
   return useQuery({
-    queryKey: ['coupons', 'me', page, limit, status],
+    queryKey: customerKeys.coupons.list(page, limit, status),
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -40,7 +41,7 @@ export function useMyCoupons(page: number = 1, limit: number = 10, status?: Coup
 
 export function useActiveCoupons(limit: number = 10) {
   return useQuery({
-    queryKey: ['coupons', 'active', limit],
+    queryKey: customerKeys.coupons.active(limit),
     queryFn: async () => {
       const res = await api.get<any>(`${ENDPOINTS.coupons.me}?status=ACTIVE&limit=${limit}`)
       return formatCouponsWithPagination(res.data)

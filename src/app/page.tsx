@@ -49,27 +49,27 @@ export default function HomePage() {
 
             {/* Trust Strip */}
             <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 md:gap-6 mt-4 sm:mt-6 text-xs sm:text-sm">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-white/90">
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span>Verified Merchants</span>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-white/90">
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-info flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
                 <span>Secure Payments</span>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-white/90">
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span>Money-Back Guarantee</span>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-white/90">
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                 <span>QR Redeem</span>
@@ -281,13 +281,13 @@ export default function HomePage() {
       {/* Enhanced CTA Section */}
       <section className="py-12 sm:py-16 md:py-20 lg:py-24">
         <div className="container mx-auto px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-8 sm:p-12 md:p-16 text-center text-white shadow-elegant-xl">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-8 sm:p-12 md:p-16 text-center text-primary-foreground shadow-elegant-xl">
             {/* Background decoration */}
             <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
             
             <div className="relative space-y-6 sm:space-y-8 max-w-2xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
                 Dapatkan informasi tentang promo dan voucher menarik hampir setiap hari!
               </h2>
               

@@ -107,13 +107,13 @@ export function hasLowInventory(deal: Deal): boolean {
 export function getCountdownColor(urgency: UrgencyLevel): string {
   switch (urgency) {
     case 'urgent':
-      return 'text-red-500 bg-red-500/10 border-red-500/20'
+      return 'text-destructive bg-destructive/10 border-destructive/20'
     case 'ending-soon':
-      return 'text-orange-500 bg-orange-500/10 border-orange-500/20'
+      return 'text-warning bg-warning/10 border-warning/20'
     case 'expired':
-      return 'text-gray-500 bg-gray-500/10 border-gray-500/20'
+      return 'text-muted-foreground bg-muted border-border'
     default:
-      return 'text-green-500 bg-green-500/10 border-green-500/20'
+      return 'text-success bg-success/10 border-success/20'
   }
 }
 
