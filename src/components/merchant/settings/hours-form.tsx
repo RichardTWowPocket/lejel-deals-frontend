@@ -308,4 +308,3 @@ export function HoursForm() {
     </Card>
   )
 }
-

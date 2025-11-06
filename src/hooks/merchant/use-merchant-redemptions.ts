@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { merchantKeys } from '@/lib/query-keys'
@@ -11,8 +12,40 @@ import { handleApiError } from '@/lib/error-handler'
 export function useMerchantRedemptions(filters?: RedemptionFilters) {
   const { activeMerchantId } = useMerchant()
 
+  // Memoize and normalize query key to ensure stability
+  // Normalize filters to remove undefined values and ensure consistent serialization
+  const queryKey = useMemo(() => {
+    // Normalize filters: remove undefined values and ensure consistent format
+    const normalizedFilters: any = {
+      merchantId: activeMerchantId,
+    }
+    
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          // Normalize dates to ISO strings for consistency
+          if (key === 'startDate' || key === 'endDate') {
+            normalizedFilters[key] = new Date(value).toISOString()
+          } else {
+            normalizedFilters[key] = value
+          }
+        }
+      })
+    }
+    
+    return merchantKeys.redemptions.list(normalizedFilters)
+  }, [
+    filters?.page,
+    filters?.limit,
+    filters?.startDate,
+    filters?.endDate,
+    filters?.status,
+    filters?.search,
+    activeMerchantId,
+  ])
+
   return useQuery<RedemptionListResponse, Error>({
-    queryKey: merchantKeys.redemptions.list({ ...filters, merchantId: activeMerchantId }),
+    queryKey,
     queryFn: async () => {
       if (!activeMerchantId) {
         throw new Error('No active merchant selected.')
@@ -47,13 +80,12 @@ export function useMerchantRedemptions(filters?: RedemptionFilters) {
       return response.data.data
     },
     enabled: !!activeMerchantId,
-    staleTime: 60 * 1000, // 1 minute (frequently changing lists)
-    gcTime: 5 * 60 * 1000, // 5 minutes (garbage collection)
-    refetchOnWindowFocus: true,
-    refetchOnMount: false,
-    refetchOnReconnect: true,
+    staleTime: 2 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+    gcTime: 5 * 60 * 1000, // 10 minutes - keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Respect global setting - don't refetch on window focus
+    refetchOnMount: false, // Don't refetch if we have cached data
+    refetchOnReconnect: true, // Still refetch on reconnect
   })
 }
-
 
 

@@ -33,13 +33,6 @@ export const merchantKeys = {
       [...merchantKeys.overview.all, 'me', merchantId] as const,
   },
 
-  // Payouts
-  payouts: {
-    all: ['merchant', 'payouts'] as const,
-    me: (period?: string, merchantId?: string | null) => 
-      [...merchantKeys.payouts.all, 'me', period, merchantId] as const,
-  },
-
   // Deals (merchant-scoped)
   deals: {
     all: ['merchant', 'deals'] as const,

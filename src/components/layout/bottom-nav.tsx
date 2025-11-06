@@ -15,11 +15,23 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCanAccessQRScanner } from '@/hooks/use-can-access-qr-scanner'
+import { useHasMerchantRole } from '@/hooks/use-has-merchant-role'
+import { MerchantRole } from '@/lib/constants'
 
 export function BottomNav() {
   const pathname = usePathname()
   const isMerchant = pathname.startsWith('/merchant')
   const canAccessQRScanner = useCanAccessQRScanner()
+  const { hasAccess: canManageStaff } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
+  const { hasAccess: canViewOrders } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
   
   // Customer navigation items
   const customerNavItems = [
@@ -67,12 +79,13 @@ export function BottomNav() {
       name: 'Staff',
       href: '/merchant/staff',
       icon: Users,
-      hidden: canAccessQRScanner, // Show Staff when QR Scanner is hidden (for OWNER/ADMIN)
+      hidden: !canManageStaff || canAccessQRScanner, // Hide if user cannot manage staff OR if QR scanner is visible
     },
     {
       name: 'Orders',
       href: '/merchant/orders',
       icon: Receipt,
+      hidden: !canViewOrders, // Hide if user cannot view orders
     },
   ].filter((item) => !item.hidden) // Filter out hidden items
 
@@ -131,4 +144,3 @@ export function BottomNav() {
     </nav>
   )
 }
-

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { MerchantSidebar } from '@/components/layout/merchant-sidebar'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { DashboardNavbar } from '@/components/layout/dashboard-navbar'
@@ -20,13 +21,26 @@ import { UserRole } from '@/lib/constants'
  * - Responsive layout
  */
 export default function MerchantLayout({ children }: { children: React.ReactNode }) {
+  // Prevent body scroll when in dashboard layout
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.height = '100vh'
+    
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+      document.body.style.height = ''
+    }
+  }, [])
+
   return (
     <ProtectedRoute
       allowedRoles={[UserRole.MERCHANT, UserRole.SUPER_ADMIN]}
       redirectTo="/login"
     >
       <MerchantProvider>
-        <div className='flex h-screen bg-gradient-to-br from-background via-muted/10 to-background'>
+        <div className='flex h-screen bg-gradient-to-br from-background via-muted/10 to-background overflow-hidden'>
           {/* Sidebar */}
           <MerchantSidebar />
           
@@ -52,6 +66,5 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
     </ProtectedRoute>
   )
 }
-
 
 

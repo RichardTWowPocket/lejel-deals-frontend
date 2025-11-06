@@ -64,45 +64,48 @@ export function DealFilters({ className }: DealFiltersProps) {
         />
       </div>
 
-      {/* Status Filter */}
-      <Select
-        value={filters.status || 'all'}
-        onValueChange={(value) =>
-          updateFilters({ status: value === 'all' ? undefined : (value as DealStatus), page: 1 })
-        }
-      >
-        <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Status</SelectItem>
-          <SelectItem value={DealStatus.ACTIVE}>Active</SelectItem>
-          <SelectItem value={DealStatus.PAUSED}>Paused</SelectItem>
-          <SelectItem value={DealStatus.DRAFT}>Draft</SelectItem>
-          <SelectItem value={DealStatus.EXPIRED}>Expired</SelectItem>
-          <SelectItem value={DealStatus.SOLD_OUT}>Sold Out</SelectItem>
-        </SelectContent>
-      </Select>
+      {/* Status and Category Filters - Side by side on small screens, row on md+ */}
+      <div className="flex flex-row gap-4 md:flex-row md:items-center">
+        {/* Status Filter */}
+        <Select
+          value={filters.status || 'all'}
+          onValueChange={(value) =>
+            updateFilters({ status: value === 'all' ? undefined : (value as DealStatus), page: 1 })
+          }
+        >
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value={DealStatus.ACTIVE}>Active</SelectItem>
+            <SelectItem value={DealStatus.PAUSED}>Paused</SelectItem>
+            <SelectItem value={DealStatus.DRAFT}>Draft</SelectItem>
+            <SelectItem value={DealStatus.EXPIRED}>Expired</SelectItem>
+            <SelectItem value={DealStatus.SOLD_OUT}>Sold Out</SelectItem>
+          </SelectContent>
+        </Select>
 
-      {/* Category Filter */}
-      <Select
-        value={filters.categoryId || 'all'}
-        onValueChange={(value) =>
-          updateFilters({ categoryId: value === 'all' ? undefined : value, page: 1 })
-        }
-      >
-        <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="Category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          {categories.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
-              {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Category Filter */}
+        <Select
+          value={filters.categoryId || 'all'}
+          onValueChange={(value) =>
+            updateFilters({ categoryId: value === 'all' ? undefined : value, page: 1 })
+          }
+        >
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Clear Filters Button */}
       {hasActiveFilters && (
@@ -119,6 +122,5 @@ export function DealFilters({ className }: DealFiltersProps) {
     </div>
   )
 }
-
 
 

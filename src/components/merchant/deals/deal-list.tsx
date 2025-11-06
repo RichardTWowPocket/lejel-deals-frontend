@@ -20,6 +20,7 @@ import { DealActions } from './deal-actions'
 import { EmptyState } from '@/components/merchant/shared/empty-state'
 import { InlineEmptyState } from '@/components/merchant/shared/empty-state'
 import { DealsListSkeleton, TableSkeleton } from '@/components/merchant/shared/loading-skeleton'
+import { useCanPerformAction } from '@/hooks/use-can-perform-action'
 import type { Deal } from '@/types/deal'
 import { Package } from 'lucide-react'
 
@@ -51,12 +52,16 @@ function formatCurrency(amount: number): string {
  * ```
  */
 export function DealList({ deals, isLoading, error, onRetry }: DealListProps) {
+  const { canEditDeal, canPublishDeal } = useCanPerformAction()
+  const canPerformActions = canEditDeal || canPublishDeal
+  
   // Loading state
   if (isLoading) {
     return (
       <>
         <div className="hidden md:block">
-          <TableSkeleton columns={6} rows={5} />
+          {/* Show 5 columns if no actions, 6 if actions available */}
+          <TableSkeleton columns={canPerformActions ? 6 : 5} rows={5} />
         </div>
         <div className="md:hidden">
           <DealsListSkeleton count={5} />
@@ -111,7 +116,9 @@ export function DealList({ deals, isLoading, error, onRetry }: DealListProps) {
               <TableHead>Price</TableHead>
               <TableHead>Inventory</TableHead>
               <TableHead>Valid Until</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              {canPerformActions && (
+                <TableHead className="text-right">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -191,9 +198,11 @@ export function DealList({ deals, isLoading, error, onRetry }: DealListProps) {
                     })}
                   </div>
                 </TableCell>
-                <TableCell className="text-right">
-                  <DealActions deal={deal} />
-                </TableCell>
+                {canPerformActions && (
+                  <TableCell className="text-right">
+                    <DealActions deal={deal} />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -222,7 +231,7 @@ export function DealList({ deals, isLoading, error, onRetry }: DealListProps) {
                     </p>
                   )}
                 </div>
-                <DealActions deal={deal} />
+                {canPerformActions && <DealActions deal={deal} />}
               </div>
             </CardHeader>
             <CardContent>
@@ -288,6 +297,5 @@ export function DealList({ deals, isLoading, error, onRetry }: DealListProps) {
     </>
   )
 }
-
 
 

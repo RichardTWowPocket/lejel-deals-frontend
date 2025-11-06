@@ -4,6 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { OrderDetails } from '@/components/merchant/orders/order-details'
 import { useMerchantOrder } from '@/hooks/merchant/use-merchant-orders'
 import { ErrorDisplay, PageHeaderSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
@@ -66,20 +68,28 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => router.back()}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Orders
-      </Button>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+        MerchantRole.SUPERVISOR,
+      ]}
+    >
+      <div className="space-y-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Orders
+        </Button>
 
-      <OrderDetails order={order} />
-    </div>
+        <OrderDetails order={order} />
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
 
 

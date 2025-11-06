@@ -48,11 +48,11 @@ export function useMerchantOrders(filters?: OrderFilters) {
       return response.data.data
     },
     enabled: !!activeMerchantId,
-    staleTime: 60 * 1000, // 1 minute (frequently changing lists)
-    gcTime: 5 * 60 * 1000, // 5 minutes (garbage collection)
-    refetchOnWindowFocus: true,
-    refetchOnMount: false,
-    refetchOnReconnect: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes - data is considered fresh for 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache for 5 minutes
+    refetchOnWindowFocus: false, // Respect global setting - don't refetch on window focus
+    refetchOnMount: false, // Don't refetch if we have cached data
+    refetchOnReconnect: true, // Still refetch on reconnect
   })
 }
 

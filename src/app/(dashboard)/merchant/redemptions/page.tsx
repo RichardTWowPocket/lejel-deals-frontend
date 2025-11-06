@@ -10,6 +10,8 @@ import { useRedemptionStats } from '@/hooks/merchant/use-redemption-stats'
 import { useMerchantFilters } from '@/hooks/use-merchant-filters'
 import { RedemptionFilters, RedemptionResponse } from '@/types/redemption'
 import { ErrorDisplay, PageHeaderSkeleton, RedemptionsListSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import { Receipt } from 'lucide-react'
 import {
   Dialog,
@@ -48,7 +50,9 @@ export default function RedemptionsPage() {
     setSelectedRedemption(redemption)
   }
 
-  if (isLoading || statsLoading) {
+  // Only show loading skeleton if we have no cached data at all
+  // This prevents showing loading when we have cached data but are refetching in background
+  if (isLoading && !data && !stats) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -64,7 +68,9 @@ export default function RedemptionsPage() {
     return (
       <ErrorDisplay
         error={error}
-        onRetry={() => refetch()}
+        onRetry={() => {
+          refetch().catch(console.error)
+        }}
         title="Failed to load redemptions"
         description="We couldn't retrieve your redemptions. Please try again."
       />
@@ -72,17 +78,24 @@ export default function RedemptionsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Redemptions</h1>
-          <p className="text-sm text-muted-foreground">
-            View and manage all coupon redemptions
-          </p>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Redemptions</h1>
+            <p className="text-sm text-muted-foreground">
+              View and manage all coupon redemptions
+            </p>
+          </div>
+          <RedemptionExport />
         </div>
-        <RedemptionExport />
-      </div>
 
       {/* Statistics Cards */}
       {stats && <RedemptionStats stats={stats} />}
@@ -185,7 +198,8 @@ export default function RedemptionsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
 

@@ -32,4 +32,4 @@ export {
   EmptyState,
   InlineEmptyState,
 } from './empty-state'
-
+export { AccessDenied } from './access-denied'

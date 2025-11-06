@@ -8,6 +8,8 @@ import { useMerchantOrders } from '@/hooks/merchant/use-merchant-orders'
 import { useMerchantFilters } from '@/hooks/use-merchant-filters'
 import { OrderFilters, Order } from '@/types/order'
 import { ErrorDisplay, PageHeaderSkeleton, OrdersListSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import { ShoppingBag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -39,11 +41,17 @@ export default function OrdersPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <PageHeaderSkeleton />
+      <div className="space-y-0 md:space-y-6">
+        <div className="hidden md:block">
+          <PageHeaderSkeleton />
+        </div>
         <OrderStats />
-        <OrderFiltersComponent className="opacity-50 pointer-events-none" />
-        <OrdersListSkeleton />
+        <div className="!mt-4 md:!mt-0">
+          <OrderFiltersComponent className="opacity-50 pointer-events-none" />
+        </div>
+        <div className="!mt-4 md:!mt-0">
+          <OrdersListSkeleton />
+        </div>
       </div>
     )
   }
@@ -62,8 +70,16 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+        MerchantRole.SUPERVISOR,
+      ]}
+    >
+      <div className="space-y-0 md:space-y-6">
+      <div className="hidden md:block">
         <h1 className="text-2xl font-bold">Orders</h1>
         <p className="text-sm text-muted-foreground">
           Manage and track all customer orders
@@ -72,20 +88,24 @@ export default function OrdersPage() {
 
       <OrderStats />
 
-      <OrderFiltersComponent />
+      <div className="!mt-4 md:!mt-0">
+        <OrderFiltersComponent />
+      </div>
 
       {/* Background Refetch Indicator */}
       {!isLoading && isFetching && ordersData && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground !mt-4 md:!mt-0">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <span>Refreshing orders...</span>
         </div>
       )}
 
-      <OrderList data={ordersData} onViewDetails={handleViewDetails} />
-    </div>
+      <div className="!mt-4 md:!mt-0">
+        <OrderList data={ordersData} onViewDetails={handleViewDetails} />
+      </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
 
 

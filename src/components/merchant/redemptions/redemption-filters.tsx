@@ -57,20 +57,20 @@ export function RedemptionFilters({ className }: RedemptionFiltersProps) {
   // Date range state
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     if (filters.startDate && filters.endDate) {
+      const fromDate = new Date(filters.startDate)
+      const toDate = new Date(filters.endDate)
       return {
-        from: new Date(filters.startDate),
-        to: new Date(filters.endDate),
+        from: fromDate,
+        to: toDate,
       }
     }
-    // Default to last 30 days
-    const today = new Date()
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(today.getDate() - 30)
-    return {
-      from: thirtyDaysAgo,
-      to: today,
-    }
+    return undefined
   })
+
+  // Track popover open state and first selected date
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [firstSelectedDate, setFirstSelectedDate] = useState<Date | null>(null)
+  const [tempRange, setTempRange] = useState<DateRange | undefined>(undefined)
 
   const hasActiveFilters =
     filters.status ||
@@ -80,26 +80,120 @@ export function RedemptionFilters({ className }: RedemptionFiltersProps) {
     filters.endDate
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range)
-    if (range?.from && range?.to) {
+    // First click - user selects first date
+    if (range?.from && !firstSelectedDate && !range.to) {
+      setFirstSelectedDate(range.from)
+      setTempRange({ from: range.from, to: undefined })
+      setDateRange({ from: range.from, to: undefined })
+      // Keep calendar open, don't update filters yet
+      return
+    }
+
+    // Second click - range is complete (both from and to are set)
+    if (firstSelectedDate && range?.from && range?.to) {
+      const secondDate = range.to
+      
+      // Check if same date clicked (compare dates, ignore time)
+      const isSameDate = 
+        firstSelectedDate.getFullYear() === secondDate.getFullYear() &&
+        firstSelectedDate.getMonth() === secondDate.getMonth() &&
+        firstSelectedDate.getDate() === secondDate.getDate()
+
+      if (isSameDate) {
+        // Same date clicked - set as single date and close
+        const singleDate = firstSelectedDate
+        setDateRange({ from: singleDate, to: singleDate })
+        setTempRange({ from: singleDate, to: singleDate })
+        setFirstSelectedDate(null)
+        setIsPopoverOpen(false)
+        updateFilters({
+          startDate: singleDate.toISOString(),
+          endDate: singleDate.toISOString(),
+          page: 1,
+        })
+        return
+      }
+
+      // Different date clicked - create range (auto-order: earlier = from, later = to)
+      const fromDate = firstSelectedDate < secondDate ? firstSelectedDate : secondDate
+      const toDate = firstSelectedDate < secondDate ? secondDate : firstSelectedDate
+
+      setDateRange({ from: fromDate, to: toDate })
+      setTempRange({ from: fromDate, to: toDate })
+      setFirstSelectedDate(null)
+      setIsPopoverOpen(false)
       updateFilters({
-        startDate: range.from.toISOString(),
-        endDate: range.to.toISOString(),
+        startDate: fromDate.toISOString(),
+        endDate: toDate.toISOString(),
         page: 1,
       })
-    } else if (range?.from) {
+      return
+    }
+
+    // Handle case where range is cleared after first click (clicking same date again)
+    if ((!range || !range.from) && firstSelectedDate) {
+      // User clicked same date again - react-day-picker cleared it
+      // Set it as single date immediately and close calendar
+      const singleDate = firstSelectedDate
+      setDateRange({ from: singleDate, to: singleDate })
+      setTempRange({ from: singleDate, to: singleDate })
+      setFirstSelectedDate(null)
+      setIsPopoverOpen(false)
       updateFilters({
-        startDate: range.from.toISOString(),
-        endDate: undefined,
+        startDate: singleDate.toISOString(),
+        endDate: singleDate.toISOString(),
         page: 1,
       })
-    } else {
+      return
+    }
+
+    // If no range and no first selected date, reset everything
+    if (!range || !range.from) {
+      setDateRange(undefined)
+      setTempRange(undefined)
+      setFirstSelectedDate(null)
       updateFilters({
         startDate: undefined,
         endDate: undefined,
         page: 1,
       })
     }
+  }
+
+  // Handle popover open/close
+  const handlePopoverOpenChange = (open: boolean) => {
+    // When opening, restore state
+    if (open) {
+      // If we have existing dateRange, use it
+      if (dateRange?.from && dateRange?.to) {
+        setTempRange(dateRange)
+        setFirstSelectedDate(null) // Reset first selected date when opening with existing range
+      } else if (dateRange?.from && !dateRange?.to) {
+        // If we have a partial range (only from), restore it
+        setTempRange({ from: dateRange.from, to: undefined })
+        setFirstSelectedDate(dateRange.from)
+      } else {
+        setTempRange(undefined)
+        setFirstSelectedDate(null)
+      }
+      setIsPopoverOpen(true)
+      return
+    }
+    
+    // When closing - if only first date selected, make it single date
+    if (!open && firstSelectedDate && dateRange?.from && !dateRange?.to) {
+      const singleDate = firstSelectedDate
+      setDateRange({ from: singleDate, to: singleDate })
+      setTempRange({ from: singleDate, to: singleDate })
+      setFirstSelectedDate(null)
+      updateFilters({
+        startDate: singleDate.toISOString(),
+        endDate: singleDate.toISOString(),
+        page: 1,
+      })
+    }
+    
+    setIsPopoverOpen(open)
   }
 
   return (
@@ -157,7 +251,7 @@ export function RedemptionFilters({ className }: RedemptionFiltersProps) {
       {/* Second Row: Date Range and Deal */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         {/* Date Range Picker */}
-        <Popover>
+        <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -169,10 +263,15 @@ export function RedemptionFilters({ className }: RedemptionFiltersProps) {
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateRange?.from ? (
                 dateRange.to ? (
-                  <>
-                    {format(dateRange.from, 'LLL dd, y')} -{' '}
-                    {format(dateRange.to, 'LLL dd, y')}
-                  </>
+                  // If from and to are the same, show single date
+                  dateRange.from.getTime() === dateRange.to.getTime() ? (
+                    format(dateRange.from, 'LLL dd, y')
+                  ) : (
+                    <>
+                      {format(dateRange.from, 'LLL dd, y')} -{' '}
+                      {format(dateRange.to, 'LLL dd, y')}
+                    </>
+                  )
                 ) : (
                   format(dateRange.from, 'LLL dd, y')
                 )
@@ -181,12 +280,15 @@ export function RedemptionFilters({ className }: RedemptionFiltersProps) {
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent 
+            className="w-auto p-0" 
+            align="start"
+          >
             <Calendar
               initialFocus
               mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
+              defaultMonth={dateRange?.from || tempRange?.from}
+              selected={tempRange || dateRange}
               onSelect={handleDateRangeChange}
               numberOfMonths={1}
             />
@@ -216,4 +318,3 @@ export function RedemptionFilters({ className }: RedemptionFiltersProps) {
     </div>
   )
 }
-

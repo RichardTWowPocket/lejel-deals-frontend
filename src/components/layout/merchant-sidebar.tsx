@@ -23,6 +23,8 @@ import { cn, getInitials } from '@/lib/utils'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { MerchantSelector } from '@/components/merchant/merchant-selector'
 import { useCanAccessQRScanner } from '@/hooks/use-can-access-qr-scanner'
+import { useHasMerchantRole } from '@/hooks/use-has-merchant-role'
+import { MerchantRole } from '@/lib/constants'
 
 interface MerchantSidebarProps {
   className?: string
@@ -34,6 +36,31 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
   const isCollapsed = sidebarCollapsed
   const canAccessQRScanner = useCanAccessQRScanner()
+  const { hasAccess: canManageStaff } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
+  const { hasAccess: canManageMedia } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
+  const { hasAccess: canViewOrders } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
+  const { hasAccess: canViewPayouts } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
+  const { hasAccess: canViewRedemptions } = useHasMerchantRole([
+    MerchantRole.OWNER,
+    MerchantRole.ADMIN,
+    MerchantRole.MANAGER,
+  ])
 
   const navigationItems = [
     {
@@ -56,26 +83,31 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
       name: 'Redemptions',
       href: '/merchant/redemptions',
       icon: Receipt,
+      hidden: !canViewRedemptions, // Hide if user cannot view redemptions
     },
     {
       name: 'Orders',
       href: '/merchant/orders',
       icon: Receipt,
+      hidden: !canViewOrders, // Hide if user cannot view orders
     },
     {
       name: 'Payouts',
       href: '/merchant/payouts',
       icon: DollarSign,
+      hidden: !canViewPayouts, // Hide if user cannot view payouts
     },
     {
       name: 'Staff',
       href: '/merchant/staff',
       icon: Users,
+      hidden: !canManageStaff, // Hide if user cannot manage staff
     },
     {
       name: 'Media',
       href: '/merchant/media',
       icon: Image,
+      hidden: !canManageMedia, // Hide if user cannot manage media
     },
     {
       name: 'Settings',
@@ -85,11 +117,23 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
   ].filter((item) => !item.hidden) // Filter out hidden items
 
   return (
-    <div className={cn(
-      'hidden md:flex h-screen flex-col bg-background border-r border-border/50 transition-all duration-300',
-      isCollapsed ? 'w-20' : 'w-64',
-      className
-    )}>
+    <div 
+      className={cn(
+        'hidden md:flex h-screen flex-col bg-background border-r border-border/50 transition-all duration-300 overflow-hidden',
+        isCollapsed ? 'w-20' : 'w-64',
+        className
+      )}
+      onWheel={(e) => {
+        // Prevent page scroll when hovering over sidebar (except nav area)
+        const target = e.target as HTMLElement
+        const nav = target.closest('nav')
+        if (!nav) {
+          // If not scrolling in nav, prevent page scroll
+          e.preventDefault()
+          e.stopPropagation()
+        }
+      }}
+    >
       {/* Logo Section */}
       <div className={cn(
         'flex flex-col border-b border-border/50 transition-all duration-300',
@@ -242,6 +286,5 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
     </div>
   )
 }
-
 
 

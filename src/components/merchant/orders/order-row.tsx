@@ -169,4 +169,3 @@ export function OrderRow({ order, onViewDetails, className, variant = 'table' }:
 }
 
 
-

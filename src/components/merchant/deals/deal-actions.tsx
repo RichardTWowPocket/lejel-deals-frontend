@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useToggleDealStatus } from '@/hooks/merchant/use-toggle-deal-status'
 import { useDeleteDeal } from '@/hooks/merchant'
+import { useCanPerformAction } from '@/hooks/use-can-perform-action'
 import { DealStatus } from '@/types/deal'
 import type { Deal } from '@/types/deal'
 import {
@@ -46,6 +47,7 @@ export function DealActions({ deal, onEdit }: DealActionsProps) {
   const router = useRouter()
   const toggleStatus = useToggleDealStatus()
   const deleteDeal = useDeleteDeal()
+  const { canEditDeal, canPublishDeal } = useCanPerformAction()
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const handleEdit = () => {
@@ -93,41 +95,51 @@ export function DealActions({ deal, onEdit }: DealActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleEdit} disabled={isToggling || isDeleting}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {canPause && (
+          {canEditDeal && (
+            <>
+              <DropdownMenuItem onClick={handleEdit} disabled={isToggling || isDeleting}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          {canPublishDeal && (
+            <>
+              {canPause && (
+                <DropdownMenuItem
+                  onClick={handlePause}
+                  disabled={isToggling || isDeleting}
+                >
+                  <Pause className="mr-2 h-4 w-4" />
+                  {isToggling ? 'Pausing...' : 'Pause'}
+                </DropdownMenuItem>
+              )}
+              {canResume && (
+                <DropdownMenuItem
+                  onClick={handleResume}
+                  disabled={isToggling || isDeleting}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  {isToggling 
+                    ? (deal.status === DealStatus.DRAFT ? 'Publishing...' : 'Resuming...')
+                    : (deal.status === DealStatus.DRAFT ? 'Publish' : 'Resume')
+                  }
+                </DropdownMenuItem>
+              )}
+              {canPause || canResume ? <DropdownMenuSeparator /> : null}
+            </>
+          )}
+          {canEditDeal && (
             <DropdownMenuItem
-              onClick={handlePause}
+              onClick={() => setIsDeleteOpen(true)}
               disabled={isToggling || isDeleting}
+              className="text-destructive focus:text-destructive"
             >
-              <Pause className="mr-2 h-4 w-4" />
-              {isToggling ? 'Pausing...' : 'Pause'}
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
             </DropdownMenuItem>
           )}
-          {canResume && (
-            <DropdownMenuItem
-              onClick={handleResume}
-              disabled={isToggling || isDeleting}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              {isToggling 
-                ? (deal.status === DealStatus.DRAFT ? 'Publishing...' : 'Resuming...')
-                : (deal.status === DealStatus.DRAFT ? 'Publish' : 'Resume')
-              }
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => setIsDeleteOpen(true)}
-            disabled={isToggling || isDeleting}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -154,6 +166,5 @@ export function DealActions({ deal, onEdit }: DealActionsProps) {
     </>
   )
 }
-
 
 

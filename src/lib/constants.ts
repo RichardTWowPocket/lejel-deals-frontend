@@ -196,4 +196,3 @@ export const SUCCESS_MESSAGES = {
   LOGOUT: 'Successfully logged out!',
   REGISTER: 'Account created successfully!',
 } as const;
-

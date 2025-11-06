@@ -3,6 +3,8 @@
 import { SettingsTabs } from '@/components/merchant/settings/settings-tabs'
 import { ErrorDisplay, PageHeaderSkeleton } from '@/components/merchant/shared'
 import { useMerchantSettings } from '@/hooks/merchant'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import { Settings } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -38,23 +40,32 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6" />
-          Settings
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your merchant profile, business information, and preferences
-        </p>
-      </div>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+        MerchantRole.SUPERVISOR,
+        MerchantRole.CASHIER,
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Settings className="h-6 w-6" />
+            Settings
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your merchant profile, business information, and preferences
+          </p>
+        </div>
 
-      {/* Settings Tabs */}
-      <SettingsTabs />
-    </div>
+        {/* Settings Tabs */}
+        <SettingsTabs />
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
 
 

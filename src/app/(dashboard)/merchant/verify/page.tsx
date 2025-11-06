@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button'
 import { CheckCircle, QrCode } from 'lucide-react'
 import { PageHeaderSkeleton } from '@/components/merchant/shared/loading-skeleton'
 import { ErrorDisplay } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import toast from 'react-hot-toast'
 
 // Lazy load QR scanner (heavy library: html5-qrcode)
@@ -137,19 +139,28 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Verify & Redeem</h1>
-          <p className="text-sm text-muted-foreground">Scan QR codes to verify and process redemptions</p>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+        MerchantRole.SUPERVISOR,
+        MerchantRole.CASHIER,
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Verify & Redeem</h1>
+            <p className="text-sm text-muted-foreground">Scan QR codes to verify and process redemptions</p>
+          </div>
+          {viewState !== 'scanner' && (
+            <Button variant="outline" onClick={resetToScanner}>
+              New Scan
+            </Button>
+          )}
         </div>
-        {viewState !== 'scanner' && (
-          <Button variant="outline" onClick={resetToScanner}>
-            New Scan
-          </Button>
-        )}
-      </div>
 
       {/* Content */}
       <div className="max-w-2xl mx-auto">
@@ -204,9 +215,9 @@ export default function VerifyPage() {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
 
 

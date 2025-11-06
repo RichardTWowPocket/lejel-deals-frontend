@@ -10,6 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { DealForm, DealStatusBadge, DealInventoryAlert } from '@/components/merchant/deals'
 import { useMerchantDeal } from '@/hooks/merchant'
 import { ErrorDisplay, DealDetailSkeleton, PageHeaderSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { useCanPerformAction } from '@/hooks/use-can-perform-action'
+import { MerchantRole } from '@/lib/constants'
 import { Package, Edit, Eye } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 
@@ -39,6 +42,7 @@ export default function DealDetailPage() {
   const router = useRouter()
   const dealId = params?.dealId
   const mode = searchParams.get('mode') === 'edit' ? 'edit' : 'view'
+  const { canEditDeal } = useCanPerformAction()
 
   const { data: deal, isLoading, error, refetch } = useMerchantDeal(dealId)
 
@@ -102,10 +106,17 @@ export default function DealDetailPage() {
     )
   }
 
-  // Edit Mode
+  // Edit Mode - Protected
   if (mode === 'edit') {
     return (
-      <div className="space-y-6">
+      <MerchantRoleProtectedRoute
+        requiredRoles={[
+          MerchantRole.OWNER,
+          MerchantRole.ADMIN,
+          MerchantRole.MANAGER,
+        ]}
+      >
+        <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Edit Deal</h1>
@@ -135,33 +146,45 @@ export default function DealDetailPage() {
             <DealForm mode="edit" dealId={dealId} />
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </MerchantRoleProtectedRoute>
     )
   }
 
-  // View Mode (Read-only)
+  // View Mode (Read-only) - All roles can view
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">{deal.title}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Deal details and information
-          </p>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+        MerchantRole.SUPERVISOR,
+        MerchantRole.CASHIER,
+      ]}
+    >
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">{deal.title}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Deal details and information
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {canEditDeal && (
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/merchant/deals/${dealId}?mode=edit`)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+            <Link href="/merchant/deals">
+              <Button variant="outline">Back to Deals</Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/merchant/deals/${dealId}?mode=edit`)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Link href="/merchant/deals">
-            <Button variant="outline">Back to Deals</Button>
-          </Link>
-        </div>
-      </div>
 
       <DealInventoryAlert deal={deal} />
 
@@ -320,6 +343,7 @@ export default function DealDetailPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }

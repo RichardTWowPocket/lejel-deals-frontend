@@ -7,6 +7,9 @@ import { useMerchantStaff } from '@/hooks/merchant/use-merchant-staff'
 import { useDeleteStaff } from '@/hooks/merchant/use-delete-staff'
 import { useUIStore } from '@/store/ui-store'
 import { ErrorDisplay, PageHeaderSkeleton, StaffListSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { useCanPerformAction } from '@/hooks/use-can-perform-action'
+import { MerchantRole } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Plus, Users } from 'lucide-react'
 import {
@@ -36,6 +39,7 @@ export default function StaffPage() {
   const { data: staffData, isLoading, isFetching, error, refetch } = useMerchantStaff()
   const { openStaffModal } = useUIStore()
   const deleteStaff = useDeleteStaff()
+  const { canCreateStaff, canViewStaff } = useCanPerformAction()
 
   const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null)
   const [staffToResetPin, setStaffToResetPin] = useState<Staff | null>(null)
@@ -88,6 +92,17 @@ export default function StaffPage() {
     )
   }
 
+  // If user can't view staff, show access denied
+  if (!canViewStaff) {
+    return (
+      <MerchantRoleProtectedRoute
+        requiredRoles={[MerchantRole.OWNER, MerchantRole.ADMIN, MerchantRole.MANAGER]}
+      >
+        <div />
+      </MerchantRoleProtectedRoute>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -101,10 +116,12 @@ export default function StaffPage() {
             Manage your staff members and their access
           </p>
         </div>
-        <Button onClick={() => openStaffModal(null)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Staff
-        </Button>
+        {canCreateStaff && (
+          <Button onClick={() => openStaffModal(null)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Staff
+          </Button>
+        )}
       </div>
 
       {/* Background Refetch Indicator */}
@@ -161,6 +178,5 @@ export default function StaffPage() {
     </div>
   )
 }
-
 
 

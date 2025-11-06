@@ -21,6 +21,8 @@ import {
   KPICardsSkeleton,
   PageHeaderSkeleton,
 } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import Link from 'next/link'
 import { useMerchantOverview, type MerchantOverview } from '@/hooks/merchant'
 
@@ -133,14 +135,23 @@ export default function MerchantOverviewPage() {
   ]
 
   return (
-    <div className='space-y-6'>
-      {/* Background Refetch Indicator */}
-      {isRefreshing && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span>Refreshing dashboard...</span>
-        </div>
-      )}
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+        MerchantRole.SUPERVISOR,
+        MerchantRole.CASHIER,
+      ]}
+    >
+      <div className='space-y-0 md:space-y-6'>
+        {/* Background Refetch Indicator */}
+        {isRefreshing && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Refreshing dashboard...</span>
+          </div>
+        )}
 
       {/* Header - Hidden on mobile, visible on md and up */}
       <div className='hidden md:block'>
@@ -173,7 +184,7 @@ export default function MerchantOverviewPage() {
       )}
 
       {/* KPI Cards - Responsive grid: 2 cols on mobile, 2 on tablet, 4 on desktop */}
-      <div className='grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4 -mt-6 md:mt-0'>
+      <div className='grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {kpiCards.map((kpi) => (
           <Card key={kpi.title} className='hover:shadow-lg transition-shadow'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6'>
@@ -185,7 +196,7 @@ export default function MerchantOverviewPage() {
               </div>
             </CardHeader>
             <CardContent className='p-3 sm:p-6 pt-0'>
-              <div className='text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight'>{kpi.value}</div>
+              <div className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight'>{kpi.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -193,7 +204,7 @@ export default function MerchantOverviewPage() {
 
       {/* Low Inventory Deals */}
       {lowInventoryDeals.length > 0 && (
-        <Card className='mt-6 md:mt-0'>
+        <Card className='!mt-4 md:!mt-0'>
           <CardHeader>
             <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
               <div>
@@ -270,7 +281,7 @@ export default function MerchantOverviewPage() {
       )}
 
       {/* Active Deals Summary */}
-      <Card>
+      <Card className='!mt-4 md:!mt-0'>
         <CardHeader>
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
             <div>
@@ -300,7 +311,7 @@ export default function MerchantOverviewPage() {
       </Card>
 
       {/* Recent Activity */}
-      <div className='grid gap-4 md:grid-cols-2'>
+      <div className='grid gap-4 md:grid-cols-2 !mt-4 md:!mt-0'>
         {/* Today's Orders */}
         <Card>
           <CardHeader>
@@ -363,10 +374,10 @@ export default function MerchantOverviewPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
 
 
 

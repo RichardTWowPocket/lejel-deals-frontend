@@ -6,6 +6,7 @@ import { useMerchantDeals } from '@/hooks/merchant'
 import { DealFilters, DealList } from '@/components/merchant/deals'
 import { Button } from '@/components/ui/button'
 import { ErrorDisplay } from '@/components/merchant/shared/error-display'
+import { useCanPerformAction } from '@/hooks/use-can-perform-action'
 import {
   Pagination,
   PaginationContent,
@@ -39,36 +40,41 @@ export default function MerchantDealsPage() {
   })
 
   const { data, isLoading, isFetching, error, refetch } = useMerchantDeals(filters)
+  const { canCreateDeal } = useCanPerformAction()
 
   const totalPages = data?.pagination?.totalPages || 1
   const currentPage = filters.page || 1
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-0 md:space-y-6 relative">
       {/* Create Deal Button - Desktop */}
-      <div className="hidden md:flex justify-end">
-        <Link href="/merchant/deals/new">
-          <Button>Create Deal</Button>
-        </Link>
-      </div>
+      {canCreateDeal && (
+        <div className="hidden md:flex justify-end">
+          <Link href="/merchant/deals/new">
+            <Button>Create Deal</Button>
+          </Link>
+        </div>
+      )}
 
       {/* Filters */}
       <DealFilters />
 
       {/* Error State */}
       {error && (
-        <ErrorDisplay
-          error={error}
-          onRetry={() => {
-            refetch()
-          }}
-          title="Failed to load deals"
-        />
+        <div className="!mt-4 md:!mt-0">
+          <ErrorDisplay
+            error={error}
+            onRetry={() => {
+              refetch()
+            }}
+            title="Failed to load deals"
+          />
+        </div>
       )}
 
       {/* Background Refetch Indicator */}
       {!isLoading && isFetching && data && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground !mt-4 md:!mt-0">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <span>Refreshing...</span>
         </div>
@@ -76,17 +82,20 @@ export default function MerchantDealsPage() {
 
       {/* Deals List */}
       {!error && (
-        <DealList
-          deals={data?.deals || []}
-          isLoading={isLoading}
-          error={error}
-          onRetry={refetch}
-        />
+        <div className="!mt-4 md:!mt-0">
+          <DealList
+            deals={data?.deals || []}
+            isLoading={isLoading}
+            error={error}
+            onRetry={refetch}
+          />
+        </div>
       )}
 
       {/* Pagination */}
       {!error && data && totalPages > 1 && (
-        <Pagination>
+        <div className="!mt-4 md:!mt-0">
+          <Pagination>
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
@@ -150,20 +159,23 @@ export default function MerchantDealsPage() {
             </PaginationItem>
           </PaginationContent>
         </Pagination>
+        </div>
       )}
 
       {/* Floating Action Button - Mobile */}
-      <Link
-        href="/merchant/deals/new"
-        className="fixed bottom-20 right-4 z-50 md:hidden"
-      >
-        <Button
-          size="lg"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+      {canCreateDeal && (
+        <Link
+          href="/merchant/deals/new"
+          className="fixed bottom-20 right-4 z-50 md:hidden"
         >
-          <Plus className="h-6 w-6" />
-        </Button>
-      </Link>
+          <Button
+            size="lg"
+            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </Link>
+      )}
     </div>
   )
 }

@@ -7,6 +7,8 @@ import { PayoutTable } from '@/components/merchant/payouts/payout-table'
 import { PayoutExport } from '@/components/merchant/payouts/payout-export'
 import { useMerchantPayouts } from '@/hooks/merchant/use-merchant-payouts'
 import { ErrorDisplay, PageHeaderSkeleton, KPICardsSkeleton, PayoutChartSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import { PayoutPeriod } from '@/types/payout'
 import { DollarSign } from 'lucide-react'
 
@@ -64,20 +66,27 @@ export default function PayoutsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <DollarSign className="h-6 w-6" />
-            Payouts & Revenue
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Track your revenue, orders, and payouts
-          </p>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <DollarSign className="h-6 w-6" />
+              Payouts & Revenue
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Track your revenue, orders, and payouts
+            </p>
+          </div>
+          <PayoutExport period={period} />
         </div>
-        <PayoutExport period={period} />
-      </div>
 
       {/* Summary Cards */}
       <PayoutSummary summary={summary} />
@@ -102,9 +111,9 @@ export default function PayoutsPage() {
           summary={summary}
         />
       </div>
-    </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
 
 

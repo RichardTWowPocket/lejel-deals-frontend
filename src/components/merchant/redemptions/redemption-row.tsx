@@ -160,4 +160,3 @@ export function RedemptionRow({ redemption, onViewDetails, className, variant = 
     </div>
   )
 }
-

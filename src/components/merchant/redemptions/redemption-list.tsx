@@ -106,4 +106,3 @@ export function RedemptionList({ data, onViewDetails }: RedemptionListProps) {
     </div>
   )
 }
-

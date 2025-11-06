@@ -31,66 +31,82 @@ export function OrderStats() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
       {/* Total Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-          <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+          <CardTitle className="text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight">
+            Total Orders
+          </CardTitle>
+          <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-blue-600" />
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
             {formatNumber(stats.totalOrders)}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             All time orders
           </p>
         </CardContent>
       </Card>
 
       {/* Total Revenue */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+          <CardTitle className="text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight">
+            Total Revenue
+          </CardTitle>
+          <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-emerald-600" />
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
             {formatCurrency(stats.totalRevenue)}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             Average: {formatCurrency(stats.averageOrderValue)}
           </p>
         </CardContent>
       </Card>
 
       {/* Paid Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Paid Orders</CardTitle>
-          <CheckCircle className="h-4 w-4 text-success" />
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+          <CardTitle className="text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight">
+            Paid Orders
+          </CardTitle>
+          <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-green-600" />
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-success">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-success">
             {formatNumber(stats.paidOrders)}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             {stats.statusDistribution?.PAID || 0} paid
           </p>
         </CardContent>
       </Card>
 
       {/* Pending Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
-          <Clock className="h-4 w-4 text-warning" />
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+          <CardTitle className="text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight">
+            Pending Orders
+          </CardTitle>
+          <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-orange-600" />
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-warning">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-warning">
             {formatNumber(stats.pendingOrders)}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             {stats.statusDistribution?.PENDING || 0} pending
           </p>
         </CardContent>

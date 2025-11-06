@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic'
 import { MediaLibrary } from '@/components/merchant/media/media-library'
 import { useMerchantMedia, useDeleteMedia, useBulkDeleteMedia } from '@/hooks/merchant'
 import { ErrorDisplay, PageHeaderSkeleton, MediaGridSkeleton } from '@/components/merchant/shared'
+import { MerchantRoleProtectedRoute } from '@/components/auth/merchant-role-protected-route'
+import { MerchantRole } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Upload, ImageIcon, Grid3x3, CheckSquare } from 'lucide-react'
 import { Media } from '@/types/media'
@@ -123,18 +125,25 @@ export default function MediaPage() {
   const media = mediaData?.data || []
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ImageIcon className="h-6 w-6" />
-            Media Library
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage your images and media files
-          </p>
-        </div>
+    <MerchantRoleProtectedRoute
+      requiredRoles={[
+        MerchantRole.OWNER,
+        MerchantRole.ADMIN,
+        MerchantRole.MANAGER,
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <ImageIcon className="h-6 w-6" />
+              Media Library
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage your images and media files
+            </p>
+          </div>
         <div className="flex items-center gap-2">
           <Button
             variant={showSelection ? 'default' : 'outline'}
@@ -222,7 +231,7 @@ export default function MediaPage() {
         onOpenChange={setIsDetailsOpen}
         onDelete={handleDeleteFromDetails}
       />
-    </div>
+      </div>
+    </MerchantRoleProtectedRoute>
   )
 }
-
