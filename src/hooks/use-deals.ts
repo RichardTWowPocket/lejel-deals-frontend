@@ -13,7 +13,14 @@ export function useDeals(filters?: DealFilters) {
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            params.append(key, String(value))
+            // Map frontend parameter names to backend parameter names
+            let paramKey = key
+            if (key === 'minPrice') {
+              paramKey = 'priceMin'
+            } else if (key === 'maxPrice') {
+              paramKey = 'priceMax'
+            }
+            params.append(paramKey, String(value))
           }
         })
       }

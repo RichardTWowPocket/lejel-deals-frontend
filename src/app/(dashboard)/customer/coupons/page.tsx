@@ -12,9 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useMyCoupons } from '@/hooks/use-coupons'
 import { usePayment } from '@/hooks/use-payment'
 import { CouponQRModal } from '@/components/coupon/coupon-qr-modal'
+import Link from 'next/link'
 import { 
   Search, 
-  Filter, 
   SortAsc,
   SortDesc,
   QrCode,
@@ -22,10 +22,9 @@ import {
   XCircle,
   AlertCircle,
   Plus,
-  Link,
 } from 'lucide-react'
 
-type CouponStatus = 'ALL' | 'ACTIVE' | 'USED' | 'EXPIRED'
+type CouponStatus = 'ALL' | 'ACTIVE' | 'USED' | 'EXPIRED' | 'EXPIRING_SOON'
 type SortOption = 'expiresAt' | 'createdAt' | 'merchant' | 'dealPrice'
 type SortOrder = 'asc' | 'desc'
 
@@ -39,7 +38,6 @@ export default function CouponsPage() {
   const [cityFilter, setCityFilter] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('expiresAt')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
-  const [showExpiringSoon, setShowExpiringSoon] = useState(false)
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null)
   const [isQRModalOpen, setIsQRModalOpen] = useState(false)
 
@@ -53,7 +51,14 @@ export default function CouponsPage() {
       coupon.deal?.merchant?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       coupon.order?.orderNumber?.toLowerCase().includes(searchQuery.toLowerCase())
     
-    const matchesStatus = statusFilter === 'ALL' || coupon.status === statusFilter
+    let matchesStatus = false
+    if (statusFilter === 'ALL') {
+      matchesStatus = true
+    } else if (statusFilter === 'EXPIRING_SOON') {
+      matchesStatus = coupon.status === 'ACTIVE' && isExpiringSoon(coupon.expiresAt)
+    } else {
+      matchesStatus = coupon.status === statusFilter
+    }
     
     const matchesMerchant = merchantFilter === '' || 
       coupon.deal?.merchant?.name?.toLowerCase().includes(merchantFilter.toLowerCase())
@@ -61,9 +66,7 @@ export default function CouponsPage() {
     const matchesCity = cityFilter === '' || 
       coupon.deal?.merchant?.city?.toLowerCase().includes(cityFilter.toLowerCase())
     
-    const matchesExpiringSoon = !showExpiringSoon || isExpiringSoon(coupon.expiresAt)
-    
-    return matchesSearch && matchesStatus && matchesMerchant && matchesCity && matchesExpiringSoon
+    return matchesSearch && matchesStatus && matchesMerchant && matchesCity
   })
 
   // Sort coupons
@@ -98,18 +101,19 @@ export default function CouponsPage() {
     }
   })
 
-  const statusCounts = {
-    ALL: totalCoupons,
-    ACTIVE: coupons.filter((c: any) => c.status === 'ACTIVE').length,
-    USED: coupons.filter((c: any) => c.status === 'USED').length,
-    EXPIRED: coupons.filter((c: any) => c.status === 'EXPIRED').length,
-  }
-
   const isExpiringSoon = (expiresAt: string) => {
     const now = new Date()
     const expiry = new Date(expiresAt)
     const diffInHours = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60)
     return diffInHours <= 48 && diffInHours > 0
+  }
+
+  const statusCounts = {
+    ALL: totalCoupons,
+    ACTIVE: coupons.filter((c: any) => c.status === 'ACTIVE').length,
+    USED: coupons.filter((c: any) => c.status === 'USED').length,
+    EXPIRED: coupons.filter((c: any) => c.status === 'EXPIRED').length,
+    EXPIRING_SOON: coupons.filter((c: any) => c.status === 'ACTIVE' && isExpiringSoon(c.expiresAt)).length,
   }
 
   const formatRelativeDate = (dateString: string) => {
@@ -162,12 +166,18 @@ export default function CouponsPage() {
   }
 
   const getUniqueMerchants = () => {
-    const merchants = coupons.map((c: any) => c.deal?.merchant?.name).filter(Boolean)
+    const merchants = coupons
+      .map((c: any) => c.deal?.merchant?.name || c.deal?.merchant?.businessName)
+      .filter((merchant): merchant is string => Boolean(merchant && merchant.trim()))
+
     return [...new Set(merchants)]
   }
 
   const getUniqueCities = () => {
-    const cities = coupons.map((c: any) => c.deal?.merchant?.city).filter(Boolean)
+    const cities = coupons
+      .map((c: any) => c.deal?.merchant?.city || c.deal?.merchant?.location?.city)
+      .filter((city): city is string => Boolean(city && city.trim()))
+
     return [...new Set(cities)]
   }
 
@@ -183,7 +193,7 @@ export default function CouponsPage() {
 
   return (
     <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
-      <div className='space-y-6'>
+      <div>
         {/* Header */}
         <header className='space-y-2'>
           <div className='flex items-center justify-between'>
@@ -203,7 +213,7 @@ export default function CouponsPage() {
         </header>
 
         {/* Search */}
-        <div className='relative'>
+        <div className='relative mt-4 md:mt-6'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
             placeholder='Search for coupons...'
@@ -213,95 +223,84 @@ export default function CouponsPage() {
           />
         </div>
 
-        {/* Status Tabs */}
-        <div className='flex items-center gap-2 overflow-x-auto pb-2'>
-          {(['ALL', 'ACTIVE', 'USED', 'EXPIRED'] as CouponStatus[]).map((status) => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? 'default' : 'outline'}
-              size='sm'
-              onClick={() => setStatusFilter(status)}
-              className='whitespace-nowrap'
-            >
-              {status === 'ALL' ? 'All' : status}
-              {statusCounts[status] > 0 && (
-                <Badge variant='secondary' className='ml-2 text-xs'>
-                  {statusCounts[status]}
-                </Badge>
-              )}
-            </Button>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <div className='flex items-center gap-4 overflow-x-auto pb-2'>
-          <div className='flex items-center gap-2'>
-            <Filter className='h-4 w-4 text-muted-foreground' />
-            <span className='text-sm font-medium'>Filters:</span>
+        {/* Status Tabs, Filters, and Sort */}
+        <div className='flex flex-wrap items-center justify-between py-1'>
+          {/* Status Tabs */}
+          <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide py-1'>
+            {(['ALL', 'ACTIVE', 'USED', 'EXPIRED', 'EXPIRING_SOON'] as CouponStatus[]).map((status) => (
+              <Button
+                key={status}
+                variant={statusFilter === status ? 'default' : 'outline'}
+                size='sm'
+                onClick={() => setStatusFilter(status)}
+                className='whitespace-nowrap'
+              >
+                {status === 'ALL' ? 'All' : status === 'EXPIRING_SOON' ? 'Expiring Soon' : status.charAt(0) + status.slice(1).toLowerCase()}
+                {statusCounts[status] > 0 && (
+                  <Badge variant='secondary' className='ml-2 text-xs'>
+                    {statusCounts[status]}
+                  </Badge>
+                )}
+              </Button>
+            ))}
           </div>
-          
-          <Select value={merchantFilter || 'all'} onValueChange={(value) => setMerchantFilter(value === 'all' ? '' : value)}>
-            <SelectTrigger className='w-[180px]'>
-              <SelectValue placeholder='All Merchants' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Merchants</SelectItem>
-              {getUniqueMerchants().map((merchant) => (
-                <SelectItem key={merchant} value={merchant}>{merchant}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={cityFilter || 'all'} onValueChange={(value) => setCityFilter(value === 'all' ? '' : value)}>
-            <SelectTrigger className='w-[150px]'>
-              <SelectValue placeholder='All Cities' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Cities</SelectItem>
-              {getUniqueCities().map((city) => (
-                <SelectItem key={city} value={city}>{city}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Button
-            variant={showExpiringSoon ? 'default' : 'outline'}
-            size='sm'
-            onClick={() => setShowExpiringSoon(!showExpiringSoon)}
-          >
-            <AlertCircle className='h-4 w-4 mr-2' />
-            Expiring Soon
-          </Button>
-        </div>
 
-        {/* Sort */}
-        <div className='flex items-center gap-4'>
-          <div className='flex items-center gap-2'>
-            <span className='text-sm font-medium'>Sort by:</span>
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-              <SelectTrigger className='w-[150px]'>
-                <SelectValue placeholder='Sort by' />
+          {/* Filters and Sort */}
+          <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide py-1'>
+            <Select value={merchantFilter || 'all'} onValueChange={(value) => setMerchantFilter(value === 'all' ? '' : value)}>
+              <SelectTrigger className='h-8 px-3 text-xs whitespace-nowrap'>
+                <SelectValue placeholder='All Merchants' />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='expiresAt'>Expiry Date</SelectItem>
-                <SelectItem value='createdAt'>Created Date</SelectItem>
-                <SelectItem value='merchant'>Merchant</SelectItem>
-                <SelectItem value='dealPrice'>Price</SelectItem>
+              <SelectContent position='popper' className='z-[100]'>
+                <SelectItem value='all' className='text-xs'>All Merchants</SelectItem>
+                {getUniqueMerchants().map((merchant) => (
+                  <SelectItem key={merchant} value={merchant} className='text-xs'>
+                    {merchant}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            
+            <Select value={cityFilter || 'all'} onValueChange={(value) => setCityFilter(value === 'all' ? '' : value)}>
+              <SelectTrigger className='h-8 px-3 text-xs whitespace-nowrap'>
+                <SelectValue placeholder='All Cities' />
+              </SelectTrigger>
+              <SelectContent position='popper' className='z-[100]'>
+                <SelectItem value='all' className='text-xs'>All Cities</SelectItem>
+                {getUniqueCities().map((city) => (
+                  <SelectItem key={city} value={city} className='text-xs'>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className='inline-flex h-8 items-center justify-between rounded-md border border-input bg-background text-xs ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className='h-8 px-2 rounded-l-md rounded-r-none border-0 border-r border-input shadow-none hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-0'
+              >
+                {sortOrder === 'asc' ? (
+                  <SortAsc className='h-4 w-4' />
+                ) : (
+                  <SortDesc className='h-4 w-4' />
+                )}
+              </Button>
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <SelectTrigger className='h-8 px-3 text-xs border-0 rounded-l-none rounded-r-md bg-transparent shadow-none focus:ring-0 focus:ring-offset-0 whitespace-nowrap hover:bg-transparent [&>svg]:opacity-50'>
+                  <SelectValue placeholder='Sort by' />
+                </SelectTrigger>
+                <SelectContent position='popper' className='z-[100]'>
+                  <SelectItem value='expiresAt' className='text-xs'>Expiry Date</SelectItem>
+                  <SelectItem value='createdAt' className='text-xs'>Created Date</SelectItem>
+                  <SelectItem value='merchant' className='text-xs'>Merchant</SelectItem>
+                  <SelectItem value='dealPrice' className='text-xs'>Price</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          >
-            {sortOrder === 'asc' ? (
-              <SortAsc className='h-4 w-4' />
-            ) : (
-              <SortDesc className='h-4 w-4' />
-            )}
-          </Button>
         </div>
 
         {/* Coupons List */}
@@ -327,7 +326,7 @@ export default function CouponsPage() {
             ))}
           </div>
         ) : sortedCoupons.length === 0 ? (
-          <Card className='border-dashed border-2 border-border/50 bg-muted/20'>
+          <Card className='border-dashed border-2 border-border/50 bg-muted/20 mt-6'>
             <CardContent className='flex flex-col items-center justify-center py-12 text-center'>
               <QrCode className='h-16 w-16 text-muted-foreground mb-4' />
               <h3 className='text-lg font-semibold mb-2'>
@@ -339,8 +338,8 @@ export default function CouponsPage() {
                   : 'Mulai jelajahi promo dan lakukan pembelian untuk melihat kupon Anda di sini.'
                 }
               </p>
-              <Button asChild>
-                <Link href='/deals'>Lihat Promo Hari Ini</Link>
+              <Button asChild className='bg-gradient-primary hover:bg-gradient-primary/90'>
+                <Link href='/deals'>Lihat deals sekarang</Link>
               </Button>
             </CardContent>
           </Card>

@@ -7,20 +7,25 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/hooks/use-auth'
 import { useCustomerOrders } from '@/hooks/use-orders'
 import { usePayment } from '@/hooks/use-payment'
 import { OrderStatusBadge } from '@/components/ui/order-status-badge'
 import { UserRole } from '@/lib/constants'
+import Link from 'next/link'
 import { 
   Search, 
   ShoppingBag, 
   ArrowRight,
   Plus,
-  Link,
+  SortAsc,
+  SortDesc,
 } from 'lucide-react'
 
 type OrderStatus = 'ALL' | 'PENDING' | 'PAID' | 'REFUNDED' | 'CANCELLED'
+type SortOption = 'createdAt' | 'totalAmount' | 'merchant' | 'status'
+type SortOrder = 'asc' | 'desc'
 
 export default function OrdersPage() {
   const { user } = useAuth()
@@ -29,11 +34,15 @@ export default function OrdersPage() {
   
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<OrderStatus>('ALL')
+  const [merchantFilter, setMerchantFilter] = useState('')
+  const [cityFilter, setCityFilter] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('createdAt')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   const orders = data?.data || []
   const totalOrders = data?.pagination?.total || 0
 
-  // Filter orders based on search and status
+  // Filter orders based on search and filters
   const filteredOrders = orders.filter((order: any) => {
     const matchesSearch = searchQuery === '' || 
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -42,7 +51,45 @@ export default function OrdersPage() {
     
     const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter
     
-    return matchesSearch && matchesStatus
+    const matchesMerchant = merchantFilter === '' || 
+      order.deal?.merchant?.businessName?.toLowerCase().includes(merchantFilter.toLowerCase())
+    
+    const matchesCity = cityFilter === '' || 
+      order.deal?.merchant?.city?.toLowerCase().includes(cityFilter.toLowerCase())
+    
+    return matchesSearch && matchesStatus && matchesMerchant && matchesCity
+  })
+
+  // Sort orders
+  const sortedOrders = [...filteredOrders].sort((a: any, b: any) => {
+    let aValue: any, bValue: any
+    
+    switch (sortBy) {
+      case 'createdAt':
+        aValue = new Date(a.createdAt).getTime()
+        bValue = new Date(b.createdAt).getTime()
+        break
+      case 'totalAmount':
+        aValue = Number(a.totalAmount) || 0
+        bValue = Number(b.totalAmount) || 0
+        break
+      case 'merchant':
+        aValue = a.deal?.merchant?.businessName || ''
+        bValue = b.deal?.merchant?.businessName || ''
+        break
+      case 'status':
+        aValue = a.status || ''
+        bValue = b.status || ''
+        break
+      default:
+        return 0
+    }
+    
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : -1
+    } else {
+      return aValue < bValue ? 1 : -1
+    }
   })
 
   const statusCounts = {
@@ -71,6 +118,16 @@ export default function OrdersPage() {
     const expired = coupons.filter((c: any) => c.status === 'EXPIRED').length
     
     return { active, used, expired, total: coupons.length }
+  }
+
+  const getUniqueMerchants = () => {
+    const merchants = orders.map((o: any) => o.deal?.merchant?.businessName).filter(Boolean)
+    return [...new Set(merchants)]
+  }
+
+  const getUniqueCities = () => {
+    const cities = orders.map((o: any) => o.deal?.merchant?.city).filter(Boolean)
+    return [...new Set(cities)]
   }
 
   const getOrderHelperText = (order: any) => {
@@ -112,7 +169,7 @@ export default function OrdersPage() {
 
   return (
     <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
-      <div className='space-y-6'>
+      <div>
         {/* Header */}
         <header className='space-y-2'>
           <div className='flex items-center justify-between'>
@@ -132,7 +189,7 @@ export default function OrdersPage() {
         </header>
 
         {/* Search */}
-        <div className='relative'>
+        <div className='relative mt-4 md:mt-6'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
             placeholder='Search for orders...'
@@ -142,24 +199,84 @@ export default function OrdersPage() {
           />
         </div>
 
-        {/* Status Filters */}
-        <div className='flex items-center gap-2 overflow-x-auto pb-2'>
-          {(['ALL', 'PENDING', 'PAID', 'REFUNDED', 'CANCELLED'] as OrderStatus[]).map((status) => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? 'default' : 'outline'}
-              size='sm'
-              onClick={() => setStatusFilter(status)}
-              className='whitespace-nowrap'
-            >
-              {status === 'ALL' ? 'All' : status}
-              {statusCounts[status] > 0 && (
-                <Badge variant='secondary' className='ml-2 text-xs'>
-                  {statusCounts[status]}
-                </Badge>
-              )}
-            </Button>
-          ))}
+        {/* Status Tabs, Filters, and Sort */}
+        <div className='flex flex-wrap items-center justify-between py-1'>
+          {/* Status Tabs */}
+          <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide py-1'>
+            {(['ALL', 'PENDING', 'PAID', 'REFUNDED', 'CANCELLED'] as OrderStatus[]).map((status) => (
+              <Button
+                key={status}
+                variant={statusFilter === status ? 'default' : 'outline'}
+                size='sm'
+                onClick={() => setStatusFilter(status)}
+                className='whitespace-nowrap'
+              >
+                {status === 'ALL' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
+                {statusCounts[status] > 0 && (
+                  <Badge variant='secondary' className='ml-2 text-xs'>
+                    {statusCounts[status]}
+                  </Badge>
+                )}
+              </Button>
+            ))}
+          </div>
+
+          {/* Filters and Sort */}
+          <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide py-1'>
+            <Select value={merchantFilter || 'all'} onValueChange={(value) => setMerchantFilter(value === 'all' ? '' : value)}>
+              <SelectTrigger className='h-8 px-3 text-xs whitespace-nowrap'>
+                <SelectValue placeholder='All Merchants' />
+              </SelectTrigger>
+              <SelectContent position='popper' className='z-[100]'>
+                <SelectItem value='all' className='text-xs'>All Merchants</SelectItem>
+                {getUniqueMerchants().map((merchant) => (
+                  <SelectItem key={merchant} value={merchant} className='text-xs'>
+                    {merchant}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={cityFilter || 'all'} onValueChange={(value) => setCityFilter(value === 'all' ? '' : value)}>
+              <SelectTrigger className='h-8 px-3 text-xs whitespace-nowrap'>
+                <SelectValue placeholder='All Cities' />
+              </SelectTrigger>
+              <SelectContent position='popper' className='z-[100]'>
+                <SelectItem value='all' className='text-xs'>All Cities</SelectItem>
+                {getUniqueCities().map((city) => (
+                  <SelectItem key={city} value={city} className='text-xs'>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className='inline-flex h-8 items-center justify-between rounded-md border border-input bg-background text-xs ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className='h-8 px-2 rounded-l-md rounded-r-none border-0 border-r border-input shadow-none hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-0'
+              >
+                {sortOrder === 'asc' ? (
+                  <SortAsc className='h-4 w-4' />
+                ) : (
+                  <SortDesc className='h-4 w-4' />
+                )}
+              </Button>
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <SelectTrigger className='h-8 px-3 text-xs border-0 rounded-l-none rounded-r-md bg-transparent shadow-none focus:ring-0 focus:ring-offset-0 whitespace-nowrap hover:bg-transparent [&>svg]:opacity-50'>
+                  <SelectValue placeholder='Sort by' />
+                </SelectTrigger>
+                <SelectContent position='popper' className='z-[100]'>
+                  <SelectItem value='createdAt' className='text-xs'>Order Date</SelectItem>
+                  <SelectItem value='totalAmount' className='text-xs'>Total Amount</SelectItem>
+                  <SelectItem value='merchant' className='text-xs'>Merchant</SelectItem>
+                  <SelectItem value='status' className='text-xs'>Status</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Orders List */}
@@ -184,8 +301,8 @@ export default function OrdersPage() {
               </Card>
             ))}
           </div>
-        ) : filteredOrders.length === 0 ? (
-          <Card className='border-dashed border-2 border-border/50 bg-muted/20'>
+        ) : sortedOrders.length === 0 ? (
+          <Card className='border-dashed border-2 border-border/50 bg-muted/20 mt-6'>
             <CardContent className='flex flex-col items-center justify-center py-12 text-center'>
               <ShoppingBag className='h-16 w-16 text-muted-foreground mb-4' />
               <h3 className='text-lg font-semibold mb-2'>
@@ -197,14 +314,14 @@ export default function OrdersPage() {
                   : 'Mulai jelajahi promo dan lakukan pembelian untuk melihat pesanan Anda di sini.'
                 }
               </p>
-              <Button asChild>
-                <Link href='/deals'>Lihat Promo Hari Ini</Link>
+              <Button asChild className='bg-gradient-primary hover:bg-gradient-primary/90'>
+                <Link href='/deals'>Lihat deals sekarang</Link>
               </Button>
             </CardContent>
           </Card>
         ) : (
           <div className='space-y-4'>
-            {filteredOrders.map((order: any) => {
+            {sortedOrders.map((order: any) => {
               const helperText = getOrderHelperText(order)
               const couponSummary = getCouponSummary(order)
               

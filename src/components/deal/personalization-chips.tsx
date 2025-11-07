@@ -46,30 +46,32 @@ export function PersonalizationChips({ activeFilter, onFilterChange }: Personali
   ]
 
   return (
-    <div className='flex flex-wrap gap-3 py-4'>
-      {chips.map((chip) => {
-        const Icon = chip.icon
-        const isActive = activeFilter === chip.id
+    <div className='overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0'>
+      <div className='flex gap-2 sm:gap-3 min-w-max sm:min-w-0 sm:flex-wrap'>
+        {chips.map((chip) => {
+          const Icon = chip.icon
+          const isActive = activeFilter === chip.id
 
-        return (
-          <Button
-            key={chip.id}
-            variant={isActive ? 'default' : 'outline'}
-            size='sm'
-            onClick={() => onFilterChange(isActive ? null : chip.id)}
-            className={cn(
-              'group h-10 rounded-xl px-4 font-semibold transition-all duration-300',
-              isActive
-                ? 'bg-gradient-primary text-white shadow-elegant-lg hover:shadow-elegant-xl'
-                : 'border-2 hover:bg-muted/50 hover:border-primary/50',
-            )}
-            title={chip.description}
-          >
-            <Icon className={cn('mr-2 h-4 w-4 transition-transform group-hover:scale-110', isActive && 'text-white')} />
-            {chip.label}
-          </Button>
-        )
-      })}
+          return (
+            <Button
+              key={chip.id}
+              variant={isActive ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => onFilterChange(isActive ? null : chip.id)}
+              className={cn(
+                'group h-9 sm:h-10 rounded-lg sm:rounded-xl px-3 sm:px-4 font-medium transition-all duration-300 text-xs sm:text-sm flex-shrink-0 whitespace-nowrap',
+                isActive
+                  ? 'bg-gradient-primary text-white shadow-elegant-lg hover:shadow-elegant-xl'
+                  : 'border-2 hover:bg-muted/50 hover:border-primary/50',
+              )}
+              title={chip.description}
+            >
+              <Icon className={cn('mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover:scale-110', isActive && 'text-white')} />
+              {chip.label}
+            </Button>
+          )
+        })}
+      </div>
     </div>
   )
 }
