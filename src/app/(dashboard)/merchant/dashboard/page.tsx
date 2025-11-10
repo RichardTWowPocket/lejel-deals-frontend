@@ -1,17 +1,19 @@
 'use client'
 
-import { 
-  TrendingUp, 
-  ShoppingBag, 
-  QrCode, 
-  DollarSign, 
+import {
+  TrendingUp,
+  ShoppingBag,
+  QrCode,
+  DollarSign,
   AlertTriangle,
   Clock,
   Package,
   Tag,
   CheckCircle2,
   Activity,
+  Plus,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -56,7 +58,7 @@ export default function MerchantOverviewPage() {
 
   if (isLoading) {
     return (
-      <div className='space-y-6'>
+      <div className='px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6'>
         <PageHeaderSkeleton />
         <KPICardsSkeleton count={4} />
       </div>
@@ -99,40 +101,59 @@ export default function MerchantOverviewPage() {
   const ordersDetails = (data as any).today?.ordersDetails ?? []
   const redemptionsDetails = (data as any).today?.redemptionsDetails ?? []
 
-  const kpiCards = [
+  type KpiCard = {
+    label: string
+    value: string | number
+    helper: string
+    icon: LucideIcon
+    highlight?: boolean
+    cardClass?: string
+    labelClass?: string
+    valueClass?: string
+    helperClass?: string
+    iconWrapperClass: string
+    iconClass: string
+  }
+
+  const kpiCards: KpiCard[] = [
     {
-      title: 'Orders Today',
+      label: 'Pesanan Hari Ini',
       value: todayOrders,
+      helper: 'Pesanan berhasil',
       icon: ShoppingBag,
-      description: 'Paid orders',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      highlight: true,
+      cardClass: 'bg-gradient-to-br from-primary to-secondary text-primary-foreground',
+      labelClass: 'text-primary-foreground/90',
+      valueClass: 'text-primary-foreground',
+      helperClass: 'text-primary-foreground/80',
+      iconWrapperClass: 'rounded-full bg-primary-foreground/20 p-2 sm:p-2.5 md:p-3 flex-shrink-0',
+      iconClass: 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary-foreground',
     },
     {
-      title: 'Redemptions Today',
+      label: 'Penukaran Hari Ini',
       value: todayRedemptions,
+      helper: 'Kupon berhasil dipindai',
       icon: QrCode,
-      description: 'Vouchers redeemed',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      iconWrapperClass: 'rounded-full bg-green-100 dark:bg-green-900/30 p-2 sm:p-2.5 md:p-3 flex-shrink-0',
+      iconClass: 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-green-600 dark:text-green-400',
     },
     {
-      title: 'Revenue Today',
+      label: 'Pendapatan Hari Ini',
       value: formatCurrency(todayRevenue),
+      helper: 'Total pendapatan',
       icon: DollarSign,
-      description: 'Total revenue',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
+      iconWrapperClass: 'rounded-full bg-emerald-100 dark:bg-emerald-900/30 p-2 sm:p-2.5 md:p-3 flex-shrink-0',
+      iconClass: 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-emerald-600 dark:text-emerald-400',
     },
     {
-      title: 'Redemption Rate',
+      label: 'Tingkat Penukaran',
       value: `${redemptionRate.toFixed(1)}%`,
+      helper: 'Kupon digunakan',
       icon: TrendingUp,
-      description: 'Vouchers used',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      iconWrapperClass: 'rounded-full bg-purple-100 dark:bg-purple-900/30 p-2 sm:p-2.5 md:p-3 flex-shrink-0',
+      iconClass: 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-600 dark:text-purple-400',
     },
-  ]
+  ] as const
 
   return (
     <MerchantRoleProtectedRoute
@@ -144,236 +165,305 @@ export default function MerchantOverviewPage() {
         MerchantRole.CASHIER,
       ]}
     >
-      <div className='space-y-0 md:space-y-6'>
+      <div className='mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6'>
         {/* Background Refetch Indicator */}
         {isRefreshing && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span>Refreshing dashboard...</span>
+          <div className='mb-4 flex items-center gap-2 text-sm text-muted-foreground'>
+            <div className='h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
+            <span>Menyegarkan data dashboard...</span>
           </div>
         )}
 
-      {/* Header - Hidden on mobile, visible on md and up */}
-      <div className='hidden md:block'>
-        <h1 className='text-3xl font-bold text-foreground'>Dashboard</h1>
-        <p className='text-muted-foreground mt-1'>
-          Welcome back, {merchantName}
-        </p>
-      </div>
+        {/* Header */}
+        <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
+          <div>
+            <h1 className='text-2xl md:text-3xl lg:text-4xl font-bold text-foreground'>
+              Halo, {merchantName}
+            </h1>
+            <p className='text-sm md:text-base text-muted-foreground mt-1'>
+              Pantau performa bisnis Anda hari ini
+            </p>
+          </div>
+          <Button
+            asChild
+            className='hidden md:flex bg-gradient-primary hover:bg-gradient-primary/90 h-10 md:h-11 px-4 md:px-6 text-sm md:text-base'
+          >
+            <Link href='/merchant/deals'>
+              <Plus className='mr-2 h-4 w-4' />
+              Kelola Promo
+            </Link>
+          </Button>
+        </div>
 
-      {/* Alerts */}
-      {alerts.hasAlerts && (
-        <Alert>
-          <AlertTriangle className='h-4 w-4' />
-          <AlertTitle>Action Required</AlertTitle>
-          <AlertDescription className='flex items-center gap-4 mt-2'>
-            <span>
+        <Button
+          asChild
+          className='mt-4 w-full md:hidden bg-gradient-primary hover:bg-gradient-primary/90 h-10 text-sm'
+        >
+          <Link href='/merchant/deals'>
+            <Plus className='mr-2 h-4 w-4' />
+            Kelola Promo
+          </Link>
+        </Button>
+
+        {/* Alerts */}
+        {alerts.hasAlerts && (
+          <Alert className='mt-6 sm:mt-8'>
+            <AlertTriangle className='h-4 w-4' />
+            <AlertTitle>Tindakan diperlukan</AlertTitle>
+            <AlertDescription className='mt-3 flex flex-wrap items-center gap-2 text-sm'>
               {alerts.lowInventory > 0 && (
-                <Badge variant='destructive' className='mr-2'>
-                  {alerts.lowInventory} Low Inventory Deals
+                <Badge variant='destructive' className='text-xs sm:text-sm'>
+                  {alerts.lowInventory} stok menipis
                 </Badge>
               )}
               {alerts.expiringSoon > 0 && (
-                <Badge variant='outline' className='mr-2'>
-                  {alerts.expiringSoon} Expiring Soon
+                <Badge variant='outline' className='text-xs sm:text-sm'>
+                  {alerts.expiringSoon} segera berakhir
                 </Badge>
               )}
-            </span>
-          </AlertDescription>
-        </Alert>
-      )}
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {/* KPI Cards - Responsive grid: 2 cols on mobile, 2 on tablet, 4 on desktop */}
-      <div className='grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        {kpiCards.map((kpi) => (
-          <Card key={kpi.title} className='hover:shadow-lg transition-shadow'>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6'>
-              <CardTitle className='text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight'>
-                {kpi.title}
-              </CardTitle>
-              <div className={`h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full ${kpi.bgColor} flex items-center justify-center flex-shrink-0`}>
-                <kpi.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 ${kpi.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent className='p-3 sm:p-6 pt-0'>
-              <div className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight'>{kpi.value}</div>
-            </CardContent>
-          </Card>
-        ))}
+        {/* KPI Cards */}
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8'>
+        {kpiCards.map((kpi) => {
+          const isHighlight = kpi.highlight
+          const cardBaseClass = isHighlight
+            ? `relative overflow-hidden border-0 shadow-lg transition-shadow ${kpi.cardClass ?? ''}`
+            : 'relative overflow-hidden border-0 bg-card shadow-lg transition-shadow'
+          const labelClass = `${isHighlight ? kpi.labelClass ?? 'text-primary-foreground/90' : 'text-muted-foreground'} text-xs sm:text-sm font-medium truncate`
+          const valueClass = `${isHighlight ? kpi.valueClass ?? 'text-primary-foreground' : 'text-card-foreground'} text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mt-1`
+          const helperClass = `${isHighlight ? kpi.helperClass ?? 'text-primary-foreground/80' : 'text-muted-foreground'} text-xs mt-1`
+
+          return (
+            <Card key={kpi.label} className={cardBaseClass}>
+              <CardContent className='p-3 sm:p-4 md:p-6'>
+                <div className='flex items-center justify-between'>
+                  <div className='flex-1 min-w-0'>
+                    <p className={labelClass}>{kpi.label}</p>
+                    <p className={valueClass}>{kpi.value}</p>
+                    <p className={helperClass}>{kpi.helper}</p>
+                  </div>
+                  <div className={kpi.iconWrapperClass}>
+                    <kpi.icon className={kpi.iconClass} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
-      {/* Low Inventory Deals */}
-      {lowInventoryDeals.length > 0 && (
-        <Card className='!mt-4 md:!mt-0'>
-          <CardHeader>
-            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-              <div>
-                <CardTitle className='flex items-center gap-2'>
-                  <Package className='h-5 w-5 text-orange-600' />
-                  Low Inventory Alert
-                </CardTitle>
-                <CardDescription>
-                  {lowInventoryDeals.length} deals are running low
-                </CardDescription>
+        {/* Low Inventory Deals */}
+        {lowInventoryDeals.length > 0 && (
+          <Card className='mt-6 sm:mt-8 border-0 shadow-lg'>
+            <CardHeader className='px-4 sm:px-5 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 md:pb-6'>
+              <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
+                <div>
+                  <CardTitle className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
+                    <Package className='h-5 w-5 text-orange-600' />
+                    Persediaan Menipis
+                  </CardTitle>
+                  <CardDescription className='text-xs sm:text-sm mt-1'>
+                    {lowInventoryDeals.length} promo mendekati batas stok
+                  </CardDescription>
+                </div>
+                <Button
+                  asChild
+                  variant='outline'
+                  className='h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto'
+                >
+                  <Link href='/merchant/deals'>Lihat Semua</Link>
+                </Button>
               </div>
-              <Link href='/merchant/deals'>
-                <Button variant='outline' className='w-full sm:w-auto'>View All</Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-3'>
-              {lowInventoryDeals.slice(0, 3).map((deal: any) => (
-                <div key={deal.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
-                  <div className='flex-1'>
-                    <p className='font-medium text-sm'>{deal.title}</p>
-                    <p className='text-xs text-muted-foreground mt-1'>
-                      {deal.remaining} of {deal.total} remaining ({deal.percentageLeft.toFixed(0)}%)
-                    </p>
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <Badge variant={deal.percentageLeft < 10 ? 'destructive' : 'secondary'}>
+            </CardHeader>
+            <CardContent className='px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6'>
+              <div className='space-y-3 sm:space-y-4'>
+                {lowInventoryDeals.slice(0, 3).map((deal: any) => (
+                  <div
+                    key={deal.id}
+                    className='flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-3 sm:px-4 sm:py-3.5'
+                  >
+                    <div className='flex-1 min-w-0'>
+                      <p className='font-medium text-sm sm:text-base truncate'>{deal.title}</p>
+                      <p className='text-xs sm:text-sm text-muted-foreground mt-1'>
+                        Sisa {deal.remaining} dari {deal.total} kuota ({deal.percentageLeft.toFixed(0)}%)
+                      </p>
+                    </div>
+                    <Badge
+                      variant={deal.percentageLeft < 10 ? 'destructive' : 'secondary'}
+                      className='text-xs sm:text-sm'
+                    >
                       {deal.percentageLeft.toFixed(0)}%
                     </Badge>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Expiring Soon Deals */}
-      {expiringSoonDeals.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-              <div>
-                <CardTitle className='flex items-center gap-2'>
-                  <Clock className='h-5 w-5 text-amber-600' />
-                  Expiring Soon
-                </CardTitle>
-                <CardDescription>
-                  {expiringSoonDeals.length} deals expiring within 7 days
-                </CardDescription>
-              </div>
-              <Link href='/merchant/deals'>
-                <Button variant='outline' className='w-full sm:w-auto'>View All</Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-3'>
-              {expiringSoonDeals.slice(0, 3).map((deal: any) => (
-                <div key={deal.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
-                  <div className='flex-1'>
-                    <p className='font-medium text-sm'>{deal.title}</p>
-                    <p className='text-xs text-muted-foreground mt-1'>
-                      Expires in {formatTimeRemaining(deal.expiresAt)}
-                    </p>
-                  </div>
-                  <Clock className='h-4 w-4 text-amber-600' />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Active Deals Summary */}
-      <Card className='!mt-4 md:!mt-0'>
-        <CardHeader>
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-            <div>
-              <CardTitle className='flex items-center gap-2'>
-                <Tag className='h-5 w-5 text-blue-600' />
-                Active Deals
-              </CardTitle>
-              <CardDescription>
-                {activeDeals} deals are currently active
-              </CardDescription>
-            </div>
-            <Link href='/merchant/deals'>
-              <Button variant='outline' className='w-full sm:w-auto'>Manage Deals</Button>
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className='flex items-center justify-center py-8'>
-            <div className='text-center'>
-              <Activity className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
-              <p className='text-sm text-muted-foreground'>
-                {activeDeals} active deals running
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity */}
-      <div className='grid gap-4 md:grid-cols-2 !mt-4 md:!mt-0'>
-        {/* Today's Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <ShoppingBag className='h-5 w-5' />
-              Recent Orders
-            </CardTitle>
-            <CardDescription>Last 5 orders today</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {ordersDetails.length > 0 ? (
-              <div className='space-y-3'>
-                {ordersDetails.slice(0, 5).map((order: any) => (
-                  <div key={order.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
-                    <div>
-                      <p className='text-sm font-medium'>{order.orderNumber}</p>
-                      <p className='text-xs text-muted-foreground'>{order.customer?.firstName} {order.customer?.lastName}</p>
-                    </div>
-                    <Badge variant='secondary'>{formatCurrency(Number(order.totalAmount))}</Badge>
-                  </div>
                 ))}
               </div>
-            ) : (
-              <div className='text-center py-8 text-sm text-muted-foreground'>
-                No orders today
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Today's Redemptions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <CheckCircle2 className='h-5 w-5' />
-              Recent Redemptions
-            </CardTitle>
-            <CardDescription>Last 5 redemptions today</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {redemptionsDetails.length > 0 ? (
-              <div className='space-y-3'>
-                {redemptionsDetails.slice(0, 5).map((redemption: any) => (
-                  <div key={redemption.id} className='flex items-center justify-between p-3 rounded-lg bg-muted/30'>
-                    <div>
-                      <p className='text-sm font-medium'>{redemption.coupon.deal.title}</p>
-                      <p className='text-xs text-muted-foreground'>
-                        Order: {redemption.coupon.order.orderNumber}
+        {/* Expiring Soon Deals */}
+        {expiringSoonDeals.length > 0 && (
+          <Card className='mt-6 sm:mt-8 border-0 shadow-lg'>
+            <CardHeader className='px-4 sm:px-5 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 md:pb-6'>
+              <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
+                <div>
+                  <CardTitle className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
+                    <Clock className='h-5 w-5 text-amber-600' />
+                    Segera Berakhir
+                  </CardTitle>
+                  <CardDescription className='text-xs sm:text-sm mt-1'>
+                    {expiringSoonDeals.length} promo berakhir dalam 7 hari
+                  </CardDescription>
+                </div>
+                <Button
+                  asChild
+                  variant='outline'
+                  className='h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto'
+                >
+                  <Link href='/merchant/deals'>Kelola Promo</Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className='px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6'>
+              <div className='space-y-3 sm:space-y-4'>
+                {expiringSoonDeals.slice(0, 3).map((deal: any) => (
+                  <div
+                    key={deal.id}
+                    className='flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-3 sm:px-4 sm:py-3.5'
+                  >
+                    <div className='flex-1 min-w-0'>
+                      <p className='font-medium text-sm sm:text-base truncate'>{deal.title}</p>
+                      <p className='text-xs sm:text-sm text-muted-foreground mt-1'>
+                        Berakhir dalam {formatTimeRemaining(deal.expiresAt)}
                       </p>
                     </div>
-                    <Badge variant='success'>Redeemed</Badge>
+                    <Clock className='h-4 w-4 text-amber-600 flex-shrink-0' />
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className='text-center py-8 text-sm text-muted-foreground'>
-                No redemptions today
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Active Deals Summary */}
+        <Card className='mt-6 sm:mt-8 border-0 shadow-lg'>
+          <CardHeader className='px-4 sm:px-5 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 md:pb-6'>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
+              <div>
+                <CardTitle className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
+                  <Tag className='h-5 w-5 text-blue-600' />
+                  Promo Aktif
+                </CardTitle>
+                <CardDescription className='text-xs sm:text-sm mt-1'>
+                  {activeDeals} promo sedang berjalan
+                </CardDescription>
               </div>
-            )}
+              <Button
+                asChild
+                variant='outline'
+                className='h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto'
+              >
+                <Link href='/merchant/deals'>Kelola Promo</Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className='px-4 sm:px-5 md:px-6 pb-6 sm:pb-7 md:pb-8'>
+            <div className='flex items-center justify-center py-8 sm:py-10'>
+              <div className='text-center'>
+                <Activity className='h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4' />
+                <p className='text-sm sm:text-base text-muted-foreground'>
+                  {activeDeals} promo aktif tersedia untuk pelanggan
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </div>
+
+        {/* Recent Activity */}
+        <div className='grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-2 mt-6 sm:mt-8'>
+          {/* Today's Orders */}
+          <Card className='border-0 shadow-lg'>
+            <CardHeader className='px-4 sm:px-5 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 md:pb-6'>
+              <CardTitle className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
+                <ShoppingBag className='h-5 w-5 text-primary' />
+                Pesanan Terbaru
+              </CardTitle>
+              <CardDescription className='text-xs sm:text-sm mt-1'>
+                5 pesanan terbaru hari ini
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6'>
+              {ordersDetails.length > 0 ? (
+                <div className='space-y-3 sm:space-y-4'>
+                  {ordersDetails.slice(0, 5).map((order: any) => (
+                    <div
+                      key={order.id}
+                      className='flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-3 sm:px-4 sm:py-3.5'
+                    >
+                      <div className='min-w-0'>
+                        <p className='text-sm sm:text-base font-medium truncate'>{order.orderNumber}</p>
+                        <p className='text-xs sm:text-sm text-muted-foreground truncate'>
+                          {order.customer?.firstName} {order.customer?.lastName}
+                        </p>
+                      </div>
+                      <Badge variant='secondary' className='text-xs sm:text-sm whitespace-nowrap'>
+                        {formatCurrency(Number(order.totalAmount))}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className='text-center py-8 sm:py-10 text-sm sm:text-base text-muted-foreground'>
+                  Belum ada pesanan hari ini
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Today's Redemptions */}
+          <Card className='border-0 shadow-lg'>
+            <CardHeader className='px-4 sm:px-5 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 md:pb-6'>
+              <CardTitle className='flex items-center gap-2 text-base sm:text-lg font-semibold'>
+                <CheckCircle2 className='h-5 w-5 text-green-600' />
+                Penukaran Terbaru
+              </CardTitle>
+              <CardDescription className='text-xs sm:text-sm mt-1'>
+                5 penukaran kupon terakhir hari ini
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6'>
+              {redemptionsDetails.length > 0 ? (
+                <div className='space-y-3 sm:space-y-4'>
+                  {redemptionsDetails.slice(0, 5).map((redemption: any) => (
+                    <div
+                      key={redemption.id}
+                      className='flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-3 sm:px-4 sm:py-3.5'
+                    >
+                      <div className='min-w-0'>
+                        <p className='text-sm sm:text-base font-medium truncate'>
+                          {redemption.coupon.deal.title}
+                        </p>
+                        <p className='text-xs sm:text-sm text-muted-foreground truncate'>
+                          Order: {redemption.coupon.order.orderNumber}
+                        </p>
+                      </div>
+                      <Badge variant='success' className='text-xs sm:text-sm whitespace-nowrap'>
+                        Berhasil
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className='text-center py-8 sm:py-10 text-sm sm:text-base text-muted-foreground'>
+                  Belum ada penukaran hari ini
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </MerchantRoleProtectedRoute>
   )
